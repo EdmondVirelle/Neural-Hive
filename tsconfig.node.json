@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "dist/electron",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "rootDir": ".",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "src/*"
+            ]
+        }
+    },
+    "include": [
+        "electron/**/*.ts",
+        "electron/**/*.cts",
+        "src/types/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

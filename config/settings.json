@@ -1,0 +1,6 @@
+{
+    "healthMonitor": {
+        "stallTimeout": 300000,
+        "checkInterval": 10000
+    }
+}

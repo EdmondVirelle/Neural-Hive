@@ -1,0 +1,215 @@
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Base styles */
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-gray-900 text-gray-100;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-600;
+  }
+}
+
+/* Component styles */
+@layer components {
+
+  /* Status transition for 300ms (spec 4.2) */
+  .status-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Agent card breathing effect */
+  .agent-card-working {
+    animation: breathe 2s ease-in-out infinite;
+  }
+
+  /* Responsive agent grid (spec 4.2: 1-4 columns) */
+  .agent-grid {
+    @apply grid gap-4;
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  @screen sm {
+    .agent-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @screen lg {
+    .agent-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @screen xl {
+    .agent-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Terminal container styling */
+  .terminal-container {
+    @apply bg-black rounded-lg overflow-hidden;
+  }
+
+  /* Glass effect for header */
+  .glass-header {
+    @apply bg-gray-800/95 backdrop-blur-sm border-b border-gray-700;
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+
+  /* Custom background colors */
+  .bg-gray-750 {
+    background-color: rgb(38, 42, 50);
+  }
+
+  .bg-gray-850 {
+    background-color: rgb(30, 32, 38);
+  }
+
+  .bg-gray-950 {
+    background-color: rgb(13, 15, 18);
+  }
+
+  /* Status indicator colors */
+  .status-idle {
+    @apply bg-green-500;
+  }
+
+  .status-thinking {
+    @apply bg-yellow-500 animate-pulse;
+  }
+
+  .status-working {
+    @apply bg-blue-500;
+  }
+
+  .status-error {
+    @apply bg-red-500;
+  }
+
+  .status-waiting {
+    @apply bg-orange-500;
+  }
+}
+
+/* xterm.js overrides */
+.xterm {
+  padding: 8px;
+}
+
+.xterm-viewport {
+  overflow-y: auto !important;
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}

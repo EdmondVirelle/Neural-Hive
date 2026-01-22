@@ -1,0 +1,68 @@
+{
+    "parsers": {
+        "claude": {
+            "name": "Claude Code",
+            "command": "claude",
+            "patterns": {
+                "thinking": "Thinking\\.\\.\\.",
+                "tool_use": "Running (\\w+)\\.\\.\\.",
+                "reading": "Reading file\\.\\.\\.",
+                "searching": "Searching\\.\\.\\.",
+                "error": "Error:|Exception:",
+                "waiting": "\\[y/n\\]|\\(yes/no\\)|\\?\\s*$"
+            }
+        },
+        "gemini": {
+            "name": "Gemini CLI",
+            "command": "gemini",
+            "patterns": {
+                "thinking": "\\[Thinking\\]",
+                "tool_use": "\\[Tool Use\\]: (\\w+)",
+                "reading": "Reading:",
+                "searching": "Searching:",
+                "error": "ERROR:|FAILED:",
+                "waiting": "Confirm\\?|\\[Y/n\\]"
+            }
+        },
+        "aider": {
+            "name": "Aider",
+            "command": "aider",
+            "patterns": {
+                "thinking": ">\\s*Thinking",
+                "tool_use": "Running (\\w+)",
+                "reading": "Reading",
+                "searching": "Searching",
+                "error": "Error:|Exception:",
+                "waiting": "\\?\\s*$"
+            }
+        },
+        "custom": {
+            "name": "Custom Script",
+            "command": "node",
+            "patterns": {
+                "thinking": "Thinking\\.\\.\\.",
+                "tool_use": "\\[Tool Use\\]",
+                "reading": "Reading",
+                "searching": "Searching",
+                "error": "Error:|Exception:",
+                "waiting": "\\?\\s*$"
+            }
+        }
+    },
+    "stateMapping": {
+        "thinking": "THINKING",
+        "tool_use": "WORKING",
+        "reading": "WORKING",
+        "searching": "WORKING",
+        "error": "ERROR",
+        "waiting": "WAITING_USER"
+    },
+    "statusColors": {
+        "IDLE": "#22c55e",
+        "THINKING": "#eab308",
+        "WORKING": "#3b82f6",
+        "ERROR": "#ef4444",
+        "WAITING_USER": "#f97316",
+        "PAUSED": "#8b5cf6"
+    }
+}
