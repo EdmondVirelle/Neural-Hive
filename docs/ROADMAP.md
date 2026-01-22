@@ -2,7 +2,7 @@
 
 > **AI Agent Cluster Command Center** - Development Status & Contribution Guide
 
-[![Status](https://img.shields.io/badge/Status-Alpha-orange)]()
+[![Status](https://img.shields.io/badge/Status-Beta-blue)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
 
 ---
@@ -37,7 +37,7 @@ Neural Hive is a cross-platform desktop application that enables developers to *
 Frontend:  Vue 3 + TypeScript + Pinia + Tailwind CSS
 Backend:   Electron + Node.js + node-pty
 Terminal:  xterm.js + xterm-addon-fit
-Testing:   Vitest (112 tests)
+Testing:   Vitest (112+ tests)
 Build:     Vite + electron-builder
 ```
 
@@ -56,8 +56,8 @@ Build:     Vite + electron-builder
 │  │  Node.js + TypeScript │  │  │   Vue 3 + TypeScript    │  │
 │  │  ─────────────────────│  │  │  ─────────────────────  │  │
 │  │  • node-pty (TTY)     │  │  │  • Pinia (State Mgmt)   │  │
-│  │  • Process Manager    │◄─┼──┤  • Tailwind CSS         │  │
-│  │  • Regex Parser       │──┼─►│  • Shadcn/ui            │  │
+│  │  • Agent Manager      │◄─┼──┤  • Tailwind CSS         │  │
+│  │  • Broadcast Manager  │──┼─►│  • Shadcn/ui            │  │
 │  │  • IPC Handler        │  │  │  • xterm.js (Terminal)  │  │
 │  └───────────────────────┘  │  └─────────────────────────┘  │
 └─────────────────────────────┴───────────────────────────────┘
@@ -76,7 +76,7 @@ Build:     Vite + electron-builder
 - [x] Clean three-layer separation (Renderer ↔ Preload ↔ Main)
 - [x] Secure context isolation (`contextIsolation: true`, `sandbox: true`)
 - [x] Output throttling (100ms batching via `OutputThrottler`)
-- [x] Comprehensive test coverage (112 unit tests)
+- [x] Comprehensive test coverage (112+ unit tests)
 - [x] Full TypeScript coverage with shared types
 
 ---
@@ -111,17 +111,17 @@ Build:     Vite + electron-builder
 | MF-004 | System notifications on error | FR-03-02 | Not Started |
 | MF-005 | Breathing light animation | UX 4.2 | Not Started |
 | MF-006 | 300ms state transition animation | UX 4.2 | Not Started |
-| MF-007 | Taskbar error badge | UX 4.2 | Not Started |
-| MF-008 | CLI freeze detection & auto-restart | Phase 3 | Not Started |
+| MF-007 | Taskbar error badge | UX 4.2 | ✅ Done |
+| MF-008 | CLI freeze detection & auto-restart | Phase 3 | 🔄 In Progress |
 
 ---
 
 ## Feature Roadmap
 
-### Phase 1: Core Prototype (Current)
+### Phase 1: Core Prototype
 
 ```
-Status: ██████████░░░░░░░░░░ 50%
+Status: ████████████████████ 100%
 ```
 
 | Milestone | Acceptance Criteria | Status |
@@ -130,43 +130,44 @@ Status: ██████████░░░░░░░░░░ 50%
 | node-pty integration | Can spawn `claude` CLI and capture output | ✅ Done |
 | xterm.js rendering | Frontend displays ANSI colored terminal output | ✅ Done |
 | Basic IPC | Main ↔ Renderer bidirectional communication | ✅ Done |
-| State parsing engine | Correctly identify THINKING/WORKING/IDLE | 🔄 In Progress |
-| Grid View UI | Responsive card layout with real-time updates | 🔄 In Progress |
+| Grid View UI (Basic) | Static card layout for agents | ✅ Done |
+| Initial State Parsing | Basic THINKING/IDLE detection | ✅ Done |
 
-**Deliverable:** Single button "Start Claude" app with one xterm window
+
+**Deliverable:** A functional prototype capable of launching agents and viewing their output.
 
 ---
 
-### Phase 2: Multi-Agent & Parsing
+### Phase 2: Multi-Agent & Interactivity
 
 ```
-Status: ████░░░░░░░░░░░░░░░░ 20%
+Status: ██████████████████░ 90%
 ```
 
 | Milestone | Acceptance Criteria | Status |
 |-----------|---------------------|--------|
-| AgentManager class | Support dynamic add/remove of ≥5 simultaneous agents | 🔄 In Progress |
-| State parsing engine | Correctly identify THINKING/WORKING/IDLE states | 🔄 In Progress |
-| Grid View UI | Responsive card layout with real-time status updates | ⏳ Pending |
-| Focus Mode | Click card to enter full terminal interface | ⏳ Pending |
-| Skills Panel | Display Chain of Thought and tool usage history | ⏳ Pending |
+| AgentManager class | Support dynamic add/remove of ≥20 agents | ✅ Done |
+| Advanced State Parsing | Correctly identify THINKING/WORKING/ERROR/IDLE | 🔄 In Progress |
+| Grid View UI | Responsive card layout with real-time status updates | ✅ Done |
+| Focus Mode | Click card to enter full terminal interface | ✅ Done |
+| Skills Panel | Display Chain of Thought and tool usage history | ✅ Done |
 
-**Deliverable:** Grid View interface showing state transitions, full agent lifecycle management
+**Deliverable:** Grid View interface showing state transitions, full agent lifecycle management, and interactive focus mode.
 
 ---
 
 ### Phase 3: Broadcasting & Polish
 
 ```
-Status: ░░░░░░░░░░░░░░░░░░░░ 0%
+Status: █████░░░░░░░░░░░░░░░ 25%
 ```
 
 | Milestone | Acceptance Criteria | Status |
 |-----------|---------------------|--------|
-| Command broadcasting | Support tag selection and batch sending | ⏳ Pending |
+| Command broadcasting | Support tag selection and batch sending | 🔄 In Progress |
 | Variable injection | Template variables like `{filename}` | ⏳ Pending |
 | Performance optimization | Pass NFR-01~04 all performance tests | ⏳ Pending |
-| Edge case handling | CLI freeze detection and auto-restart | ⏳ Pending |
+| Edge case handling | CLI freeze detection and auto-restart | 🔄 In Progress |
 | UI animations | Breathing light effect, state transitions | ⏳ Pending |
 | Error handling | Complete error prompts and recovery | ⏳ Pending |
 
@@ -254,8 +255,7 @@ cd neural-hive
 npm install
 
 # Start development mode
-npm run dev          # Start Vite dev server
-npm run dev:electron # Start Electron (separate terminal)
+npm run dev
 
 # Run tests
 npm test
@@ -333,4 +333,4 @@ _Add your feature requests via GitHub Issues!_
 ---
 
 _Last Updated: 2026-01-22_
-_Document Version: 1.0.0_
+_Document Version: 1.1.0_
