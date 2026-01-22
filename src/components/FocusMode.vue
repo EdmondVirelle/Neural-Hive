@@ -10,7 +10,7 @@
  * Spec Reference: 4.1.2 Focus View
  */
 
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useAgentStore } from '@/stores/agentStore';
 import TerminalView from './TerminalView.vue';
 import SkillsPanel from './SkillsPanel.vue';
