@@ -28,6 +28,7 @@ const store = useAgentStore();
 const showSpawnDialog = ref(false);
 const newAgentType = ref<AgentType>('claude');
 const newAgentCwd = ref('.');
+const newAgentName = ref('');
 
 // Handle spawn agent
 async function handleSpawnAgent() {
@@ -38,9 +39,10 @@ async function handleSpawnAgent() {
      // But browse logic was in App.vue. 
      // Let's rely on basic input for now or replicate the browse logic if checking electronAPI.
   }
-  await store.spawnAgent(newAgentType.value, newAgentCwd.value);
+  await store.spawnAgent(newAgentType.value, newAgentCwd.value, newAgentName.value || undefined);
   showSpawnDialog.value = false;
   newAgentCwd.value = '.';
+  newAgentName.value = '';
 }
 
 async function browseFolder() {
@@ -128,6 +130,18 @@ async function browseFolder() {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 items-center gap-4">
+            <label class="text-right text-sm font-medium text-gray-400">
+              Name
+            </label>
+            <div class="col-span-3">
+              <Input
+                v-model="newAgentName"
+                placeholder="Optional custom name"
+                class="bg-gray-800 border-gray-700 text-gray-100"
+              />
             </div>
           </div>
           <div class="grid grid-cols-4 items-center gap-4">

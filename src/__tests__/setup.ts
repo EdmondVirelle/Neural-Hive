@@ -7,13 +7,19 @@
 import { vi, beforeEach } from 'vitest';
 
 // Mock window.electronAPI for all tests
+let agentIdCounter = 0;
 const mockElectronAPI = {
-    spawnAgent: vi.fn().mockResolvedValue({ success: true, agentId: 'mock-id' }),
+    spawnAgent: vi.fn().mockImplementation(() => {
+        agentIdCounter++;
+        return Promise.resolve({ success: true, agentId: `mock-id-${agentIdCounter}` });
+    }),
     sendCommand: vi.fn().mockResolvedValue({ success: true }),
     killAgent: vi.fn().mockResolvedValue({ success: true }),
     onAgentLog: vi.fn().mockReturnValue(() => { }),
     onAgentStatusChange: vi.fn().mockReturnValue(() => { }),
     onUpdate: vi.fn().mockReturnValue(() => { }),
+    pauseAgent: vi.fn().mockResolvedValue({ success: true }),
+    resumeAgent: vi.fn().mockResolvedValue({ success: true }),
 };
 
 // Stub window with electronAPI

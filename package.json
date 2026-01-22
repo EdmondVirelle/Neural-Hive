@@ -8,6 +8,7 @@
         "dev": "concurrently \"vite\" \"tsc -p tsconfig.node.json --watch\"",
         "dev:electron": "electron .",
         "build": "vue-tsc && vite build && tsc -p tsconfig.node.json",
+        "build:electron": "electron-builder",
         "preview": "vite preview",
         "test": "vitest",
         "test:coverage": "vitest --coverage",

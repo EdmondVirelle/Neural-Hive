@@ -223,16 +223,15 @@ describe('agentStore', () => {
     // sendCommand Tests
     // ============================================
     describe('sendCommand', () => {
-        it('should add command to logs as stdin type', async () => {
+        it('should send command to electron and not add local log (double echo prevention)', async () => {
             const store = useAgentStore();
             store.agents.set('agent-1', createBaseAgent('agent-1'));
 
             await store.sendCommand('agent-1', 'ls -la');
 
+            expect(window.electronAPI.sendCommand).toHaveBeenCalledWith('agent-1', 'ls -la');
             const logs = store.getAgent('agent-1')?.logs;
-            expect(logs).toHaveLength(1);
-            expect(logs?.[0].content).toContain('ls -la');
-            expect(logs?.[0].type).toBe('stdin');
+            expect(logs).toHaveLength(0);
         });
 
         it('should not add command for unknown agent', async () => {

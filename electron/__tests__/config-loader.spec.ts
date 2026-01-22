@@ -16,9 +16,17 @@ vi.mock('fs', () => ({
 }));
 
 // Mock path module
-vi.mock('path', () => ({
-    join: vi.fn((...args: string[]) => args.join('/')),
-}));
+vi.mock('path', () => {
+    const mockPath = {
+        join: vi.fn((...args: string[]) => args.join('/')),
+        dirname: vi.fn(() => '/mock/dir'),
+        resolve: vi.fn((...args: string[]) => args.join('/')),
+    };
+    return {
+        ...mockPath,
+        default: mockPath,
+    };
+});
 
 describe('ConfigLoader', () => {
     beforeEach(() => {
