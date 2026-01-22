@@ -55,7 +55,7 @@ function createWindow(): void {
     height: 900,
     minWidth: 800,
     minHeight: 600,
-    title: 'Neural Hive - AI Agent Orchestrator',
+    title: 'Neural Hive v1.0.0 - AI Agent Orchestrator',
     backgroundColor: '#111827',
     webPreferences: {
       preload: path.join(_dirname, 'preload.cjs'),

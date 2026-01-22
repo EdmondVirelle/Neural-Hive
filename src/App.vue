@@ -128,6 +128,7 @@ async function browseFolder() {
             <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Neural Hive
             </h1>
+            <span class="text-xs text-gray-500 font-mono mt-1">v1.0.0</span>
           </div>
 
           <!-- Status & Actions -->
