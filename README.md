@@ -9,6 +9,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript)](https://typescriptlang.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+> [!NOTE]
+> 🚧 **Project Status: Beta** 🚧
+>
+> Check out our **[Development Roadmap](docs/ROADMAP.md)** to see the latest progress and future plans!
+
 ---
 
 ## 📖 What is this?

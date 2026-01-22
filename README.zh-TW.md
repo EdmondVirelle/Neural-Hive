@@ -9,6 +9,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript)](https://typescriptlang.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+> [!NOTE]
+> 🚧 **專案狀態：Beta 測試中** 🚧
+>
+> 歡迎查看我們的 **[開發藍圖 (Roadmap)](docs/ROADMAP.zh-TW.md)** 來了解最新開發進度與未來規劃！
+
 ---
 
 ## 📖 這是什麼？
