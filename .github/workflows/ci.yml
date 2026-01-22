@@ -83,6 +83,7 @@ jobs:
   release:
     name: Build & Release Application
     needs: build
+    if: github.event_name == 'release'
     runs-on: ${{ matrix.os }}
     
     strategy:
