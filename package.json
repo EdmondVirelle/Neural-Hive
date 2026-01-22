@@ -68,5 +68,43 @@
         "electron",
         "vue",
         "terminal"
-    ]
+    ],
+    "build": {
+        "appId": "com.neuralhive.app",
+        "productName": "Neural Hive",
+        "directories": {
+            "output": "release"
+        },
+        "files": [
+            "dist/**/*",
+            "config/**/*",
+            "package.json"
+        ],
+        "extraResources": [
+            {
+                "from": "scripts/",
+                "to": "scripts/",
+                "filter": [
+                    "**/*"
+                ]
+            }
+        ],
+        "linux": {
+            "target": [
+                "AppImage"
+            ],
+            "category": "Development"
+        },
+        "mac": {
+            "target": [
+                "dmg"
+            ],
+            "category": "public.app-category.developer-tools"
+        },
+        "win": {
+            "target": [
+                "nsis"
+            ]
+        }
+    }
 }
