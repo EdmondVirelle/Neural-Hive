@@ -28,6 +28,7 @@ const store = useAgentStore();
 const showSpawnDialog = ref(false);
 const newAgentType = ref<AgentType>('claude');
 const newAgentCwd = ref('.');
+const newAgentName = ref('');
 
 // IPC cleanup function
 let cleanupListener: (() => void) | null = null;
@@ -61,14 +62,16 @@ async function handleSpawnAgent() {
       return;
     }
   }
-  await store.spawnAgent(newAgentType.value, newAgentCwd.value);
+  await store.spawnAgent(newAgentType.value, newAgentCwd.value, newAgentName.value || undefined);
   showSpawnDialog.value = false;
   newAgentCwd.value = '';
+  newAgentName.value = '';
 }
 
 // Open spawn dialog
 function openSpawnDialog() {
   newAgentCwd.value = '';
+  newAgentName.value = '';
   showSpawnDialog.value = true;
 }
 
@@ -227,6 +230,20 @@ async function browseFolder() {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <!-- Agent Name -->
+          <div class="grid grid-cols-4 items-center gap-4">
+            <label class="text-right text-sm font-medium text-gray-400">
+              Name
+            </label>
+            <div class="col-span-3">
+              <Input
+                v-model="newAgentName"
+                placeholder="Optional custom name"
+                class="bg-gray-800 border-gray-700 text-gray-100"
+              />
             </div>
           </div>
 
