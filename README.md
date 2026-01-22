@@ -86,12 +86,14 @@ Neural Hive uses an Electron-based architecture that separates the core logic (M
 
 ### 1️⃣ Agent Session Management
 - **Add Agent** — Launch Claude, Gemini, Aider, or custom CLI tools.
+- **Custom Naming** — Assign meaningful names (e.g., "Frontend", "Backend") to each agent for better organization.
 - **Multi-instance Support** — Run 20+ agents simultaneously.
 - **Lifecycle Control** — Start, pause, restart, and terminate any agent.
 
 ### 2️⃣ Full Terminal Interaction
 - **True PTY Simulation** — Deceives CLI tools into thinking they're in a real terminal, preserving colors, prompts (y/n), and cursor movements.
 - **Focus Mode** — Click a card to enter a full-screen terminal with a dedicated "Chain of Thought" and "Skills Used" panel.
+- **Context Awareness** — Always see the agent's Current Working Directory (CWD) at the bottom of the card.
 
 ### 3️⃣ Intelligent Status Parsing
 - **Rich State Detection** — Automatically identifies states like `IDLE`, `THINKING`, `WORKING`, `ERROR`, and even `WAITING_USER` for interactive prompts.

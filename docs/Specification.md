@@ -120,7 +120,7 @@ This system will act as a "**graphical command center**," allowing users to:
 
 | ID | Feature | Description |
 |---|---|---|
-| **FR-01-01** | Add Agent | User can select an agent type (Claude, Gemini, Custom Script) and specify a working directory (cwd) to launch a new instance. |
+| **FR-01-01** | Add Agent | User can select an agent type (Claude, Gemini, Custom Script), specify a **Custom Name**, and specify a working directory (cwd) to launch a new instance. |
 | **FR-01-02** | Multiple Instances | The system must support opening **N (recommended max 20+)** independent CLI processes simultaneously. |
 | **FR-01-03** | Lifecycle Control | Support "Pause" (stop input), "Restart" (Kill & Spawn), and "Destroy" operations for individual agents. |
 | **FR-01-04** | Environment Isolation | Each agent should run in an independent process to ensure memory and variables do not interfere with each other. |
@@ -230,6 +230,7 @@ Agent-03: Check file src/config.ts
 - Agent name and type tag
 - Current status light (🟢/🟡/🔴)
 - Preview of the last 3 log lines
+- **Current Working Directory (CWD)** (displayed at the bottom)
 - CPU/Memory usage (optional)
 
 #### Focus Mode View
