@@ -319,14 +319,13 @@ _透過 GitHub Issues 新增您的功能請求！_
 
 ## 聯繫與支援
 
-- **議題**: [GitHub Issues](https://github.com/your-org/neural-hive/issues)
-- **討論**: [GitHub Discussions](https://github.com/your-org/neural-hive/discussions)
+- **議題**: [GitHub Issues](https://github.com/EdmondVirelle/Neural-Hive/issues)
+- **討論**: [GitHub Discussions](https://github.com/EdmondVirelle/Neural-Hive/discussions)
 
 ---
 
 <p align="center">
   <b>Neural Hive</b> — 讓 AI 代理叢集化工作<br>
-  由 Neural Hive 團隊用 ❤️ 製作
 </p>
 
 ---
