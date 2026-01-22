@@ -2,6 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useAgentStore } from '@/stores/agentStore';
 import AgentCard from '@/components/AgentCard.vue';
+import BroadcastPanel from '@/components/BroadcastPanel.vue';
+import FocusMode from '@/components/FocusMode.vue';
 import type { AgentType } from '@/types/shared';
 import {
   Dialog,
@@ -20,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, FolderOpen } from 'lucide-vue-next';
+import { Plus, FolderOpen, Radio } from 'lucide-vue-next';
 
 const store = useAgentStore();
 
@@ -29,6 +31,35 @@ const showSpawnDialog = ref(false);
 const newAgentType = ref<AgentType>('claude');
 const newAgentCwd = ref('.');
 const newAgentName = ref('');
+
+// Broadcast panel state
+const showBroadcastPanel = ref(false);
+
+// Focus mode state
+const focusedAgentId = ref<string | null>(null);
+
+// Handle focus mode
+function handleFocus(agentId: string) {
+  focusedAgentId.value = agentId;
+}
+
+// Handle close focus mode
+function handleCloseFocus() {
+  focusedAgentId.value = null;
+}
+
+// Handle restart from focus mode
+async function handleRestartFromFocus() {
+  if (!focusedAgentId.value) return;
+
+  const agent = store.getAgent(focusedAgentId.value);
+  if (!agent) return;
+
+  const { type, cwd, name } = agent;
+  await store.killAgent(focusedAgentId.value);
+  const newId = await store.spawnAgent(type, cwd, name);
+  focusedAgentId.value = newId;
+}
 
 // IPC cleanup function
 let cleanupListener: (() => void) | null = null;
@@ -136,6 +167,16 @@ async function browseFolder() {
             <span class="text-sm text-gray-400">
               {{ store.agentList.length }} agent{{ store.agentList.length !== 1 ? 's' : '' }} active
             </span>
+            <!-- Broadcast Button -->
+            <Button
+              variant="outline"
+              class="border-gray-700 hover:bg-gray-800 text-gray-300"
+              :disabled="store.agentList.length === 0"
+              @click="showBroadcastPanel = true"
+            >
+              <Radio class="w-4 h-4 mr-2" />
+              Broadcast
+            </Button>
             <Button
               class="bg-blue-600 hover:bg-blue-700 font-medium"
               @click="openSpawnDialog"
@@ -195,6 +236,7 @@ async function browseFolder() {
           v-for="agent in store.agentList"
           :key="agent.id"
           :agent="agent"
+          @focus="handleFocus"
         />
       </div>
     </main>
@@ -296,6 +338,17 @@ async function browseFolder() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <!-- Broadcast Panel -->
+    <BroadcastPanel v-model:open="showBroadcastPanel" />
+
+    <!-- Focus Mode -->
+    <FocusMode
+      v-if="focusedAgentId"
+      :agent-id="focusedAgentId"
+      @close="handleCloseFocus"
+      @restart="handleRestartFromFocus"
+    />
   </div>
 </template>
 

@@ -32,58 +32,53 @@ const thoughtChain = computed<ThoughtStep[]>(() => {
   if (!agent.value?.logs) return [];
 
   const steps: ThoughtStep[] = [];
-  const seen = new Set<string>();
 
+  // Process logs in order, allowing duplicates for timeline
   for (const log of agent.value.logs) {
     const content = log.content.toLowerCase();
+    const timestamp = log.timestamp;
 
-    // Detect thinking
+    // Detect thinking (Claude Code uses "Thinking...")
     if (content.includes('thinking')) {
-      const key = 'thinking';
-      if (!seen.has(key)) {
-        steps.push({ icon: Brain, text: 'Thinking...', timestamp: log.timestamp });
-        seen.add(key);
-      }
+      steps.push({ icon: Brain, text: 'Thinking...', timestamp });
     }
 
     // Detect reading files
-    if (content.includes('reading') || content.includes('read file')) {
-      const key = 'reading';
-      if (!seen.has(key)) {
-        steps.push({ icon: BookOpen, text: 'Reading project files', timestamp: log.timestamp });
-        seen.add(key);
-      }
+    if (content.includes('reading') || content.includes('read(') || content.includes('⏺ read')) {
+      steps.push({ icon: BookOpen, text: 'Reading files', timestamp });
     }
 
-    // Detect searching
-    if (content.includes('search') || content.includes('grep')) {
-      const key = 'searching';
-      if (!seen.has(key)) {
-        steps.push({ icon: Search, text: 'Searching for patterns', timestamp: log.timestamp });
-        seen.add(key);
-      }
+    // Detect searching/grep
+    if (content.includes('searching') || content.includes('grep') || content.includes('glob')) {
+      steps.push({ icon: Search, text: 'Searching codebase', timestamp });
     }
 
     // Detect analysis
-    if (content.includes('analy')) {
-      const key = 'analyzing';
-      if (!seen.has(key)) {
-        steps.push({ icon: Microscope, text: 'Analyzing codebase', timestamp: log.timestamp });
-        seen.add(key);
-      }
+    if (content.includes('analy') || content.includes('exploring')) {
+      steps.push({ icon: Microscope, text: 'Analyzing', timestamp });
     }
 
     // Detect writing/editing
-    if (content.includes('writing') || content.includes('editing') || content.includes('creating')) {
-      const key = 'writing';
-      if (!seen.has(key)) {
-        steps.push({ icon: PenTool, text: 'Writing code', timestamp: log.timestamp });
-        seen.add(key);
-      }
+    if (content.includes('writing') || content.includes('editing') || content.includes('edit(') || content.includes('write(')) {
+      steps.push({ icon: PenTool, text: 'Writing code', timestamp });
+    }
+
+    // Detect bash/command execution
+    if (content.includes('bash') || content.includes('running') || content.includes('executing')) {
+      steps.push({ icon: Wrench, text: 'Running command', timestamp });
     }
   }
 
-  return steps.slice(-10); // Keep last 10 steps
+  // Remove consecutive duplicates and keep last 15 steps
+  const filtered: ThoughtStep[] = [];
+  for (const step of steps) {
+    const last = filtered[filtered.length - 1];
+    if (!last || last.text !== step.text) {
+      filtered.push(step);
+    }
+  }
+
+  return filtered.slice(-15);
 });
 
 // Extract skills usage from logs
@@ -93,17 +88,43 @@ interface SkillUsage {
   status: 'completed' | 'pending' | 'active';
 }
 
+// Tool detection patterns for various AI CLI tools
+const toolPatterns = [
+  // Claude Code patterns
+  /⏺\s*(\w+)\s*\(/i,                    // ⏺ Read(file)
+  /Running\s+(\w+)\.\.\./i,              // Running Bash...
+  /(\w+)\s+tool/i,                       // Read tool, Edit tool
+  // Gemini patterns
+  /\[Tool Use\]:\s*(\w+)/i,              // [Tool Use]: Read
+  // Generic patterns
+  /^(Read|Write|Edit|Bash|Grep|Glob|Search|Task|WebFetch|WebSearch)\b/i,
+  /Using\s+(\w+)/i,                      // Using Read
+  /Calling\s+(\w+)/i,                    // Calling Bash
+  /Executing\s+(\w+)/i,                  // Executing command
+];
+
 const skillsUsed = computed<SkillUsage[]>(() => {
   if (!agent.value?.logs) return [];
 
   const skillCounts = new Map<string, number>();
-  const toolUseRegex = /\[tool use\]\s*(.+)/i;
 
   for (const log of agent.value.logs) {
-    const match = log.content.match(toolUseRegex);
-    if (match) {
-      const skillName = match[1].split(':')[0].trim();
-      skillCounts.set(skillName, (skillCounts.get(skillName) || 0) + 1);
+    const content = log.content;
+
+    for (const pattern of toolPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        // Get the tool name from capture group or the whole match
+        let skillName = match[1] || match[0];
+        // Normalize the name
+        skillName = skillName.trim().replace(/[^a-zA-Z]/g, '');
+        if (skillName) {
+          // Capitalize first letter
+          skillName = skillName.charAt(0).toUpperCase() + skillName.slice(1).toLowerCase();
+          skillCounts.set(skillName, (skillCounts.get(skillName) || 0) + 1);
+        }
+        break; // Only count once per log line
+      }
     }
   }
 

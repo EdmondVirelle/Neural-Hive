@@ -15,9 +15,8 @@ import { useAgentStore } from '@/stores/agentStore';
 import TerminalView from './TerminalView.vue';
 import SkillsPanel from './SkillsPanel.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCw, X, Send } from 'lucide-vue-next';
+import { ArrowLeft, RotateCw, X } from 'lucide-vue-next';
 import type { AgentStatus } from '@/types/shared';
 
 // Props
@@ -36,18 +35,6 @@ const store = useAgentStore();
 
 // Get agent data
 const agent = computed(() => store.getAgent(props.agentId));
-
-// Command input
-const commandInput = ref('');
-
-// Handle command submission
-async function handleSubmit() {
-  const command = commandInput.value.trim();
-  if (!command) return;
-
-  await store.sendCommand(props.agentId, command);
-  commandInput.value = '';
-}
 
 // Handle restart
 async function handleRestart() {
@@ -182,32 +169,6 @@ function getStatusDotClass(status: AgentStatus | undefined): string {
         <SkillsPanel :agent-id="agentId" />
       </div>
     </main>
-
-    <!-- Footer: Command Input -->
-    <footer class="px-6 py-4 bg-gray-900 border-t border-gray-800">
-      <form
-        class="flex gap-3"
-        @submit.prevent="handleSubmit"
-      >
-        <div class="flex-1 relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-mono">$</span>
-          <Input
-            v-model="commandInput"
-            type="text"
-            placeholder="Enter command..."
-            class="pl-8 font-mono bg-gray-800 border-gray-700 text-gray-100 focus-visible:ring-blue-600"
-            :disabled="agent?.status === 'ERROR'"
-          />
-        </div>
-        <Button
-          type="submit"
-          class="bg-blue-600 hover:bg-blue-700"
-          :disabled="!commandInput.trim() || agent?.status === 'ERROR'"
-        >
-          Send <Send class="w-4 h-4 ml-2" />
-        </Button>
-      </form>
-    </footer>
   </div>
 </template>
 

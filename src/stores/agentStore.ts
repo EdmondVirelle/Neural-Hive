@@ -324,6 +324,74 @@ export const useAgentStore = defineStore('agent', () => {
   }
 
   /**
+   * Set tags for an agent (FR-04: Tag-based broadcasting)
+   */
+  async function setAgentTags(agentId: string, tags: string[]): Promise<boolean> {
+    const agent = agents.value.get(agentId);
+    if (!agent) {
+      console.error(`Agent ${agentId} not found`);
+      return false;
+    }
+
+    // Update local state
+    agent.tags = tags;
+
+    // Sync with Main Process
+    if (window.electronAPI) {
+      try {
+        const result = await window.electronAPI.setAgentTags(agentId, tags);
+        return result.success;
+      } catch (error) {
+        console.error(`Failed to set tags for agent ${agentId}:`, error);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Add a tag to an agent
+   */
+  async function addAgentTag(agentId: string, tag: string): Promise<boolean> {
+    const agent = agents.value.get(agentId);
+    if (!agent) return false;
+
+    const currentTags = agent.tags || [];
+    if (currentTags.includes(tag)) return true; // Already has tag
+
+    return setAgentTags(agentId, [...currentTags, tag]);
+  }
+
+  /**
+   * Remove a tag from an agent
+   */
+  async function removeAgentTag(agentId: string, tag: string): Promise<boolean> {
+    const agent = agents.value.get(agentId);
+    if (!agent) return false;
+
+    const currentTags = agent.tags || [];
+    if (!currentTags.includes(tag)) return true; // Doesn't have tag
+
+    return setAgentTags(agentId, currentTags.filter(t => t !== tag));
+  }
+
+  /**
+   * Get all unique tags across all agents
+   */
+  const allTags = computed(() => {
+    const tagSet = new Set<string>();
+    for (const agent of agents.value.values()) {
+      if (agent.tags) {
+        for (const tag of agent.tags) {
+          tagSet.add(tag);
+        }
+      }
+    }
+    return Array.from(tagSet).sort();
+  });
+
+  /**
    * Initialize IPC listeners (call once on app mount)
    */
   function initializeIpcListeners(): void {
@@ -341,6 +409,7 @@ export const useAgentStore = defineStore('agent', () => {
     agentList,
     statusCounts,
     totalMemoryUsage,  // AGENT-02
+    allTags,           // FR-04: All unique tags
     // Actions
     spawnAgent,
     sendCommand,
@@ -353,6 +422,9 @@ export const useAgentStore = defineStore('agent', () => {
     isAgentPaused, // FR-01-03
     getAgent,
     clearLogs,
+    setAgentTags,   // FR-04
+    addAgentTag,    // FR-04
+    removeAgentTag, // FR-04
     initializeIpcListeners,
   };
 });

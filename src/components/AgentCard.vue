@@ -3,17 +3,28 @@ import { computed } from 'vue';
 import type { AgentSession, AgentStatus } from '@/types/shared';
 import { useAgentStore } from '@/stores/agentStore';
 import TerminalView from './TerminalView.vue';
+import TagManager from './TagManager.vue';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, X, AlertTriangle, RotateCcw, FolderOpen } from 'lucide-vue-next';
+import { Play, Pause, X, AlertTriangle, RotateCcw, FolderOpen, Tag, Maximize2 } from 'lucide-vue-next';
 
 // Props
 const props = defineProps<{
   agent: AgentSession;
 }>();
 
+// Emits
+const emit = defineEmits<{
+  focus: [agentId: string];
+}>();
+
 const store = useAgentStore();
+
+// Handle focus mode
+function handleFocus() {
+  emit('focus', props.agent.id);
+}
 
 
 // using custom colors for specific statuses as Shadcn has limited defaults.
@@ -108,6 +119,17 @@ const isPaused = computed(() => props.agent.status === 'PAUSED');
           {{ currentStatus.label }}
         </Badge>
 
+        <!-- Focus Mode button -->
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-7 w-7 text-gray-400 hover:text-blue-400"
+          title="Focus Mode"
+          @click="handleFocus"
+        >
+          <Maximize2 class="h-4 w-4" />
+        </Button>
+
         <!-- Pause/Resume button -->
         <Button
           v-if="!isPaused"
@@ -153,14 +175,26 @@ const isPaused = computed(() => props.agent.status === 'PAUSED');
     </div>
 
     <!-- Terminal View -->
-    <div class="flex-1 min-h-[300px] bg-black overflow-hidden relative">
+    <div
+      class="flex-1 min-h-[300px] bg-black overflow-hidden relative cursor-pointer"
+      title="Double-click to enter Focus Mode"
+      @dblclick="handleFocus"
+    >
       <TerminalView :agent-id="agent.id" />
     </div>
 
-    <!-- Footer: CWD -->
-    <div class="px-4 py-2 bg-gray-800/50 border-t border-gray-700 text-xs text-gray-400 flex items-center overflow-hidden">
-      <FolderOpen class="w-3 h-3 mr-2 text-gray-500 flex-shrink-0" />
-      <span class="truncate" :title="agent.cwd">{{ agent.cwd }}</span>
+    <!-- Footer -->
+    <div class="bg-gray-800/50 border-t border-gray-700">
+      <!-- Tags Row -->
+      <div class="px-4 py-2 flex items-center gap-2 border-b border-gray-700/50">
+        <Tag class="w-3 h-3 text-gray-500 flex-shrink-0" />
+        <TagManager :agent-id="agent.id" compact />
+      </div>
+      <!-- CWD Row -->
+      <div class="px-4 py-2 text-xs text-gray-400 flex items-center overflow-hidden">
+        <FolderOpen class="w-3 h-3 mr-2 text-gray-500 flex-shrink-0" />
+        <span class="truncate" :title="agent.cwd">{{ agent.cwd }}</span>
+      </div>
     </div>
 
     <!-- Stalled Warning Overlay -->
