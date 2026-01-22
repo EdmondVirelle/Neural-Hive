@@ -6,7 +6,7 @@ import TerminalView from './TerminalView.vue';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, X, AlertTriangle, RotateCcw } from 'lucide-vue-next';
+import { Play, Pause, X, AlertTriangle, RotateCcw, FolderOpen } from 'lucide-vue-next';
 
 // Props
 const props = defineProps<{
@@ -157,6 +157,11 @@ const isPaused = computed(() => props.agent.status === 'PAUSED');
       <TerminalView :agent-id="agent.id" />
     </div>
 
+    <!-- Footer: CWD -->
+    <div class="px-4 py-2 bg-gray-800/50 border-t border-gray-700 text-xs text-gray-400 flex items-center overflow-hidden">
+      <FolderOpen class="w-3 h-3 mr-2 text-gray-500 flex-shrink-0" />
+      <span class="truncate" :title="agent.cwd">{{ agent.cwd }}</span>
+    </div>
 
     <!-- Stalled Warning Overlay -->
     <div
