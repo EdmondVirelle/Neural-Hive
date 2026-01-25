@@ -81,24 +81,27 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="terminal-wrapper w-full h-full flex flex-col">
+  <div class="terminal-wrapper w-full h-full flex flex-col group/tw">
     <!-- Terminal Status Bar -->
-    <div class="flex items-center justify-between px-3 py-1.5 bg-gray-850 border-b border-gray-700 text-xs">
-      <span class="text-gray-500">Terminal</span>
+    <div class="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5 text-[10px] font-bold tracking-widest uppercase text-gray-500 backdrop-blur-md">
       <div class="flex items-center gap-2">
+          <Radio class="w-3 h-3 text-blue-500/50" />
+          <span>Live Session</span>
+      </div>
+      <div class="flex items-center gap-3">
         <span
           v-if="isReady"
-          class="flex items-center gap-1 text-green-500"
+          class="flex items-center gap-1.5 text-blue-400"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-green-500" />
-          Connected
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+          Ready
         </span>
         <span
           v-else
-          class="flex items-center gap-1 text-yellow-500"
+          class="flex items-center gap-1.5 text-yellow-500"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-          Connecting...
+          Linking
         </span>
       </div>
     </div>
@@ -106,7 +109,7 @@ onMounted(() => {
     <!-- Terminal Container -->
     <div
       ref="terminalContainer"
-      class="flex-1 bg-gray-950 overflow-hidden"
+      class="flex-1 overflow-hidden"
     />
   </div>
 </template>

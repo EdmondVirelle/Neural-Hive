@@ -134,16 +134,92 @@ async function browseFolder() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-950 text-gray-100 font-sans">
-    <!-- Header -->
-    <header class="sticky top-0 z-40 bg-gray-900/95 backdrop-blur border-b border-gray-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo & Title -->
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+  <div class="min-h-screen bg-gray-950 text-gray-100 font-sans selection:bg-blue-500/30">
+    <!-- Orbital Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/5 blur-[120px] animate-pulse-slow" />
+        <div class="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] rounded-full bg-purple-600/5 blur-[120px] animate-pulse-slow duration-[8s]" />
+    </div>
+
+    <!-- Floating Glass Header -->
+    <header class="fixed top-6 left-6 right-6 z-40 glass-layer rounded-2xl h-16 flex items-center px-8">
+      <div class="flex-1 flex items-center gap-4">
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group cursor-pointer hover:scale-110 transition-transform">
+            <svg
+              class="w-6 h-6 text-white group-hover:rotate-12 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </div>
+          <div>
+              <h1 class="text-xl font-black tracking-tighter uppercase text-white">
+                Neural <span class="text-blue-500">Hive</span>
+              </h1>
+              <div class="flex items-center gap-2 mt-[-2px]">
+                  <span class="text-[9px] font-black tracking-[0.2em] text-gray-500 uppercase">Orchestrator v1.0.4</span>
+                  <div class="w-1 h-1 rounded-full bg-blue-500/50" />
+                  <span class="text-[9px] font-black tracking-[0.1em] text-blue-400/60 uppercase">System Nominal</span>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Status & Actions -->
+      <div class="flex items-center gap-6">
+        <div class="hidden md:flex flex-col items-end gap-0.5">
+            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Active Fleet</span>
+            <span class="text-xs font-bold text-white tracking-widest">
+                {{ store.agentList.length }} UNIT{{ store.agentList.length !== 1 ? 'S' : '' }}
+            </span>
+        </div>
+
+        <div class="w-[1px] h-8 bg-white/10" />
+
+        <div class="flex items-center gap-3">
+            <!-- Broadcast Button -->
+            <Button
+              variant="ghost"
+              class="h-10 px-4 text-gray-400 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest text-[10px] transition-all"
+              :disabled="store.agentList.length === 0"
+              @click="showBroadcastPanel = true"
+            >
+              <Radio class="w-4 h-4 mr-2.5 text-blue-500" />
+              Broadcast
+            </Button>
+
+            <Button
+              class="h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] shadow-[0_4px_20px_rgba(37,99,235,0.3)] transition-all hover:translate-y-[-2px] active:translate-y-0"
+              @click="openSpawnDialog"
+            >
+              <Plus class="w-4 h-4 mr-2" />
+              New Agent
+            </Button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-12 relative z-10">
+      <!-- Empty State -->
+      <div
+        v-if="store.agentList.length === 0"
+        class="flex flex-col items-center justify-center py-40 animate-in fade-in zoom-in duration-700"
+      >
+        <div class="relative group cursor-pointer" @click="openSpawnDialog">
+            <div class="absolute inset-0 bg-blue-600/20 blur-[60px] rounded-full group-hover:bg-blue-600/40 transition-all duration-700" />
+            <div class="w-32 h-32 glass-layer rounded-[2.5rem] flex items-center justify-center mb-10 relative group-hover:scale-105 transition-transform duration-500">
               <svg
-                class="w-5 h-5 text-white"
+                class="w-16 h-16 text-blue-500 group-hover:text-blue-400 transition-colors"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -151,86 +227,36 @@ async function browseFolder() {
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                  stroke-width="1.5"
+                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
             </div>
-            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Neural Hive
-            </h1>
-            <span class="text-xs text-gray-500 font-mono mt-1">v1.0.0</span>
-          </div>
-
-          <!-- Status & Actions -->
-          <div class="flex items-center gap-4">
-            <span class="text-sm text-gray-400">
-              {{ store.agentList.length }} agent{{ store.agentList.length !== 1 ? 's' : '' }} active
-            </span>
-            <!-- Broadcast Button -->
-            <Button
-              variant="outline"
-              class="border-gray-700 hover:bg-gray-800 text-gray-300"
-              :disabled="store.agentList.length === 0"
-              @click="showBroadcastPanel = true"
-            >
-              <Radio class="w-4 h-4 mr-2" />
-              Broadcast
-            </Button>
-            <Button
-              class="bg-blue-600 hover:bg-blue-700 font-medium"
-              @click="openSpawnDialog"
-            >
-              <Plus class="w-4 h-4 mr-2" />
-              New Agent
-            </Button>
-          </div>
         </div>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <!-- Empty State -->
-      <div
-        v-if="store.agentList.length === 0"
-        class="flex flex-col items-center justify-center py-20"
-      >
-        <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
-          <svg
-            class="w-10 h-10 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
+        
+        <div class="text-center group">
+            <h2 class="text-4xl font-black text-white mb-3 tracking-tighter uppercase group-hover:tracking-widest transition-all duration-700">
+              Fleet Offline
+            </h2>
+            <p class="text-gray-500 font-medium tracking-wide max-w-sm mx-auto mb-10">
+              Initialize your first AI assistant to begin orchestrating computational workflows.
+            </p>
         </div>
-        <h2 class="text-xl font-semibold text-gray-300 mb-2">
-          No agents running
-        </h2>
-        <p class="text-gray-500 mb-6">
-          Click "New Agent" to spawn your first AI agent
-        </p>
+
         <Button
           size="lg"
-          class="bg-blue-600 hover:bg-blue-700"
+          class="h-14 px-10 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-[0.2em] text-xs shadow-[0_10px_40px_rgba(37,99,235,0.3)] transition-all hover:scale-105 active:scale-95"
           @click="openSpawnDialog"
         >
-          <Plus class="w-5 h-5 mr-2" />
-          Spawn Agent
+          <Plus class="w-5 h-5 mr-3" />
+          Deploy Unit
         </Button>
       </div>
 
       <!-- Agent Grid -->
       <div
         v-else
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        class="agent-grid animate-in fade-in slide-in-from-bottom-5 duration-700"
       >
         <AgentCard
           v-for="agent in store.agentList"

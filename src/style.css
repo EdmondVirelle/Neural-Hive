@@ -84,17 +84,18 @@
   }
 
   body {
-    @apply bg-gray-900 text-gray-100;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    @apply bg-gray-950 text-gray-100;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    background: radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.15) 0%, rgba(13, 15, 18, 1) 70%);
   }
 
   /* Custom scrollbar for dark theme */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -102,30 +103,47 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-700 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-600;
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
   }
 }
 
 /* Component styles */
 @layer components {
 
-  /* Status transition for 300ms (spec 4.2) */
-  .status-transition {
-    @apply transition-all duration-300 ease-in-out;
+  /* Glassmorphism layer (spec 1.1) */
+  .glass-layer {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
   }
 
-  /* Agent card breathing effect */
-  .agent-card-working {
-    animation: breathe 2s ease-in-out infinite;
+  .glass-header {
+    @apply bg-gray-950/40 backdrop-blur-md border-b border-white/5;
+  }
+
+  /* Status transition for 300ms (spec 4.2) */
+  .status-transition {
+    @apply transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Agent card breathing effect extensions */
+  .glow-idle {
+    box-shadow: 0 0 20px -5px rgba(148, 163, 184, 0.2);
+  }
+
+  .glow-thinking {
+    box-shadow: 0 0 25px -5px rgba(234, 179, 8, 0.3);
+  }
+
+  .glow-working {
+    box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.4);
+  }
+
+  .glow-error {
+    box-shadow: 0 0 30px -5px rgba(239, 68, 68, 0.5);
   }
 
   /* Responsive agent grid (spec 4.2: 1-4 columns) */
   .agent-grid {
-    @apply grid gap-4;
+    @apply grid gap-6;
     grid-template-columns: repeat(1, 1fr);
   }
 
@@ -149,46 +167,28 @@
 
   /* Terminal container styling */
   .terminal-container {
-    @apply bg-black rounded-lg overflow-hidden;
-  }
-
-  /* Glass effect for header */
-  .glass-header {
-    @apply bg-gray-800/95 backdrop-blur-sm border-b border-gray-700;
+    @apply bg-black/40 backdrop-blur-lg rounded-xl overflow-hidden border border-white/5;
   }
 }
 
 /* Utility styles */
 @layer utilities {
 
-  /* Custom background colors */
-  .bg-gray-750 {
-    background-color: rgb(38, 42, 50);
-  }
-
-  .bg-gray-850 {
-    background-color: rgb(30, 32, 38);
-  }
-
-  .bg-gray-950 {
-    background-color: rgb(13, 15, 18);
-  }
-
   /* Status indicator colors */
   .status-idle {
-    @apply bg-green-500;
+    @apply bg-slate-400;
   }
 
   .status-thinking {
-    @apply bg-yellow-500 animate-pulse;
+    @apply bg-yellow-400 animate-pulse;
   }
 
   .status-working {
-    @apply bg-blue-500;
+    @apply bg-blue-500 shadow-[0_0_10px_rgba(59, 130, 246, 0.5)];
   }
 
   .status-error {
-    @apply bg-red-500;
+    @apply bg-red-500 animate-bounce;
   }
 
   .status-waiting {
@@ -198,7 +198,7 @@
 
 /* xterm.js overrides */
 .xterm {
-  padding: 8px;
+  padding: 12px;
 }
 
 .xterm-viewport {
@@ -206,10 +206,10 @@
 }
 
 .xterm-viewport::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .xterm-viewport::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
 }

@@ -88,87 +88,131 @@ function getStatusDotClass(status: AgentStatus | undefined): string {
 </script>
 
 <template>
-  <div class="focus-mode fixed inset-0 z-50 bg-gray-950 flex flex-col animate-fade-in font-sans text-gray-100">
+  <div class="focus-mode fixed inset-0 z-50 bg-gray-950 flex flex-col animate-in fade-in duration-500 font-sans text-gray-100 overflow-hidden">
+    <!-- Orbital Background Effect -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px] animate-pulse-slow" />
+        <div class="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px] animate-pulse-slow duration-5000" />
+    </div>
+
     <!-- Header -->
-    <header class="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800">
-      <div class="flex items-center gap-4">
+    <header class="relative flex items-center justify-between px-8 py-5 glass-header z-10">
+      <div class="flex items-center gap-6">
         <!-- Back button -->
         <Button
           variant="ghost"
           size="sm"
-          class="text-gray-400 hover:text-gray-200"
+          class="text-gray-400 hover:text-white hover:bg-white/5 group"
           @click="handleClose"
         >
-          <ArrowLeft class="w-4 h-4 mr-2" />
-          Back
+          <ArrowLeft class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Return to Deck
         </Button>
 
         <!-- Agent info -->
-        <div class="flex items-center gap-3 pl-4 border-l border-gray-800">
-          <div
-            class="w-3 h-3 rounded-full"
-            :class="[
-              getStatusDotClass(agent?.status),
-              { 'animate-pulse': agent?.status === 'THINKING' || agent?.status === 'WORKING' }
-            ]"
-          />
+        <div class="flex items-center gap-5 pl-6 border-l border-white/10">
+          <div class="relative">
+              <div
+                class="w-3 h-3 rounded-full status-transition shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                :class="[
+                  getStatusDotClass(agent?.status),
+                  { 'animate-pulse': agent?.status === 'THINKING' || agent?.status === 'WORKING' }
+                ]"
+              />
+              <div 
+                v-if="agent?.status === 'WORKING'"
+                class="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-30"
+              />
+          </div>
           <div>
-            <h1 class="text-lg font-semibold text-gray-100">
-              {{ agent?.name || 'Unknown Agent' }}
-            </h1>
-            <span class="text-xs text-gray-500 capitalize">{{ agent?.type }}</span>
+            <div class="flex items-center gap-2">
+                <h1 class="text-xl font-black text-white tracking-tighter uppercase">
+                  {{ agent?.name || 'Unknown Agent' }}
+                </h1>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 font-mono tracking-widest">
+                  OPERATIONAL
+                </span>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-bold tracking-widest text-blue-400/60 uppercase">
+                <div class="w-1 h-1 rounded-full bg-blue-400/40" />
+                {{ agent?.type }}
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
         <!-- Status badge -->
-        <Badge
-          v-if="agent"
-          :variant="statusConfig[agent.status].variant"
-          :class="statusConfig[agent.status].class"
-        >
-          {{ statusConfig[agent.status].label }}
-        </Badge>
+        <div v-if="agent" class="px-4 py-1.5 rounded-full border border-white/10 bg-black/40 backdrop-blur-md flex items-center gap-3">
+            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Status:</span>
+            <Badge
+              :variant="statusConfig[agent.status].variant"
+              class="px-3 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-lg"
+              :class="statusConfig[agent.status].class"
+            >
+              {{ statusConfig[agent.status].label }}
+            </Badge>
+        </div>
 
-        <!-- Restart button -->
-        <Button
-          variant="ghost"
-          size="icon"
-          class="text-gray-400 hover:text-gray-200"
-          title="Restart Agent"
-          @click="handleRestart"
-        >
-          <RotateCw class="w-5 h-5" />
-        </Button>
+        <div class="flex items-center gap-2 ml-2">
+            <!-- Restart button -->
+            <Button
+              variant="outline"
+              size="sm"
+              class="border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-widest text-[10px] h-9"
+              title="Restart Agent"
+              @click="handleRestart"
+            >
+              <RotateCw class="w-3.5 h-3.5 mr-2" />
+              Reset
+            </Button>
 
-        <!-- Close button -->
-        <Button
-          variant="ghost"
-          size="icon"
-          class="text-gray-400 hover:text-red-400 hover:bg-red-500/10"
-          title="Close (Esc)"
-          @click="handleClose"
-        >
-          <X class="w-5 h-5" />
-        </Button>
+            <!-- Close button -->
+            <Button
+              variant="ghost"
+              size="icon"
+              class="text-gray-400 hover:text-red-400 hover:bg-red-500/10 h-9 w-9"
+              title="Close (Esc)"
+              @click="handleClose"
+            >
+              <X class="w-5 h-5" />
+            </Button>
+        </div>
       </div>
     </header>
 
     <!-- Main content: Terminal + Skills Panel -->
-    <main class="flex-1 flex overflow-hidden bg-gray-950">
+    <main class="flex-1 flex overflow-hidden relative z-0">
       <!-- Terminal (Left) -->
-      <div class="flex-1 p-4 overflow-hidden">
-        <div class="h-full bg-black rounded-xl overflow-hidden border border-gray-800 shadow-xl">
+      <div class="flex-1 p-6 overflow-hidden flex flex-col">
+        <div class="flex-1 terminal-container shadow-[0_0_100px_rgba(0,0,0,0.5)]">
           <TerminalView :agent-id="agentId" />
         </div>
       </div>
 
       <!-- Skills Panel (Right) -->
-      <div class="w-80 border-l border-gray-800 bg-gray-900 overflow-hidden">
+      <div class="w-96 glass-layer border-y-0 border-r-0 backdrop-blur-3xl animate-in slide-in-from-right duration-700">
         <SkillsPanel :agent-id="agentId" />
       </div>
     </main>
+
+    <!-- Footer Bar (Context Info) -->
+    <footer class="h-10 bg-black/40 backdrop-blur-md border-t border-white/5 flex items-center px-8 justify-between text-[10px] font-bold tracking-widest text-gray-500 uppercase">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2">
+                <FolderOpen class="w-3.5 h-3.5 mb-0.5" />
+                <span>Path: <span class="text-gray-300">{{ agent?.cwd }}</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span>Node Process: <span class="text-gray-300">Active</span></span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <span>Latency: <span class="text-blue-400">12ms</span></span>
+            <span>Uptime: <span class="text-gray-300">02:45:12</span></span>
+        </div>
+    </footer>
   </div>
 </template>
 

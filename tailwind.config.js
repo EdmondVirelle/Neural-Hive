@@ -53,7 +53,18 @@ export default {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
-                // Existing custom colors
+                // Premium AI Brand Colors
+                brand: {
+                    claude: {
+                        DEFAULT: "#D97757",
+                        accent: "#AF7AC5",
+                    },
+                    gemini: {
+                        DEFAULT: "#4B91F7",
+                        accent: "#8E44AD",
+                    },
+                    glow: "rgba(59, 130, 246, 0.5)",
+                },
                 gray: {
                     750: 'rgb(38, 42, 50)',
                     850: 'rgb(30, 32, 38)',
@@ -109,6 +120,18 @@ export default {
                 'pulse-slow': 'pulse 3s ease-in-out infinite',
                 'fade-in': 'fadeIn 300ms ease-in-out',
                 'slide-up': 'slideUp 300ms ease-out',
+                'scan': 'scan 3s linear infinite',
+                'glow': 'glow 2s ease-in-out infinite',
+            },
+            keyframes: {
+                scan: {
+                    '0%': { transform: 'translateY(-100%)' },
+                    '100%': { transform: 'translateY(100%)' },
+                },
+                glow: {
+                    '0%, 100%': { opacity: 0.5, filter: 'brightness(1)' },
+                    '50%': { opacity: 1, filter: 'brightness(1.5)' },
+                },
             },
             // Transition duration for 300ms state changes (spec 4.2)
             transitionDuration: {
