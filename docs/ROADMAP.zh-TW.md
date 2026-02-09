@@ -1,9 +1,9 @@
 # Neural Hive - 開發藍圖與已知問題
 
-> **AI 代理叢集指揮中心** - 開發狀態與貢獻指南
+> **AI 代理叢集指揮中心** - v2.0 開發狀態與貢獻指南
 
-[![狀態](https://img.shields.io/badge/Status-Beta-blue)]()
-[![歡迎 PR](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
+[![狀態](https://img.shields.io/badge/Status-v2.0_Release-green)]()
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
 
 ---
 
@@ -11,6 +11,7 @@
 
 - [專案概觀](#專案概觀)
 - [架構分析](#架構分析)
+- [v2.0 變更記錄](#v20-變更記錄)
 - [已知問題與技術債](#已知問題與技術債)
 - [功能藍圖](#功能藍圖)
 - [效能考量](#效能考量)
@@ -20,25 +21,28 @@
 
 ## 專案概觀
 
-Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統一的圖形化介面，**同時管理多個 AI CLI 工具**（如 Claude Code、Gemini CLI、Aider 等）。
+Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統一的圖形化介面，**同時管理多個 AI CLI 工具**（Claude Code、Gemini CLI、Aider、Codex、OpenCode、Cursor、GitHub Copilot）。
 
 ### 核心價值主張
 
 | 問題 | 解決方案 | 影響 |
-|---------|----------|--------|
+|------|----------|------|
 | 多個終端機視窗 | 統一的網格視圖 | 效率提升 300% |
 | 未知的代理狀態 | 自動狀態偵測 | 更快的決策 |
 | 重複性指令 | 批次廣播 | 降低操作成本 |
 | 上下文切換 | 專注模式 + 技能面板 | 降低認知負擔 |
+| 不知道裝了哪些工具 | CLI 自動偵測 | 零配置啟動 |
+| 語言障礙 | 英文/繁體中文雙語 | 更廣泛的使用者 |
 
 ### 技術堆疊
 
 ```
-前端:  Vue 3 + TypeScript + Pinia + Tailwind CSS
-後端:   Electron + Node.js + node-pty
-終端機:  xterm.js + xterm-addon-fit
-測試:   Vitest (112+ 測試)
-建置:     Vite + electron-builder
+前端:    Vue 3 + TypeScript + Pinia + Vue Router + Vue I18n
+UI:      Tailwind CSS + Shadcn/ui (Glassmorphism)
+後端:    Electron + Node.js + node-pty
+終端機:  xterm.js + xterm-addon-fit + xterm-addon-search
+測試:    Vitest (196 個單元測試，9 個測試檔案)
+建置:    Vite + electron-builder
 ```
 
 ---
@@ -48,27 +52,23 @@ Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統�
 ### 系統架構
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Electron 應用程式                         │
-├─────────────────────────────┬───────────────────────────────┤
-│      主進程 (Main Process)  │       渲染進程 (Renderer)     │
-│  ┌───────────────────────┐  │  ┌─────────────────────────┐  │
-│  │  Node.js + TypeScript │  │  │   Vue 3 + TypeScript    │  │
-│  │  ─────────────────────│  │  │  ─────────────────────  │  │
-│  │  • node-pty (TTY)     │  │  │  • Pinia (狀態管理)     │  │
-│  │  • Agent Manager      │◄─┼──┤  • Tailwind CSS         │  │
-│  │  • Broadcast Manager  │──┼─►│  • Shadcn/ui            │  │
-│  │  • IPC Handler        │  │  │  • xterm.js (終端機)    │  │
-│  └───────────────────────┘  │  └─────────────────────────┘  │
-└─────────────────────────────┴───────────────────────────────┘
-                              │
-                              ▼
-              ┌───────────────────────────────┐
-              │     外部 CLI 進程             │
-              │  ┌─────────┐    ┌──────────┐  │
-              │  │ Claude  │    │  Gemini  │  │
-              │  └─────────┘    └──────────┘  │
-              └───────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    Electron 應用程式 (v2.0)                    │
+├──────────────────────────────┬───────────────────────────────┤
+│       主進程 (Main Process)  │       渲染進程 (Renderer)      │
+│  ┌────────────────────────┐  │  ┌──────────────────────────┐  │
+│  │  • Agent Manager       │  │  │  • Vue 3 + Vue Router    │  │
+│  │  • CLI Detector        │◄─┼──┤  • Pinia (Agent/Settings)│  │
+│  │  • Settings Manager    │──┼─►│  • Vue I18n (en/zh-TW)   │  │
+│  │  • Broadcast Manager   │  │  │  • Shadcn/ui + Tailwind  │  │
+│  │  • Health Monitor      │  │  │  • xterm.js + Search     │  │
+│  │  • Output Throttler    │  │  │  • Web Worker (Parser)   │  │
+│  │  • Resource Monitor    │  │  │  • Error Boundary        │  │
+│  └────────────────────────┘  │  └──────────────────────────┘  │
+├──────────────────────────────┴───────────────────────────────┤
+│                    External CLI Processes                      │
+│  Claude | Gemini | Aider | Codex | OpenCode | Cursor | Copilot│
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### 優勢
@@ -76,8 +76,64 @@ Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統�
 - [x] 清晰的三層分離 (渲染層 ↔ 預載層 ↔ 主進程)
 - [x] 安全的上下文隔離 (`contextIsolation: true`, `sandbox: true`)
 - [x] 輸出節流 (透過 `OutputThrottler` 實現 100ms 批次處理)
-- [x] 全面的測試覆蓋 (112+ 單元測試)
+- [x] 全面的測試覆蓋 (196 個單元測試)
 - [x] 完整的 TypeScript 覆蓋與共享類型
+- [x] CLI 自動偵測（7 種 AI 工具）
+- [x] 雙語國際化支援
+- [x] 主題切換（深色/淺色）
+- [x] 錯誤邊界保護
+- [x] Web Worker 背景解析
+
+---
+
+## v2.0 變更記錄
+
+### 後端 (Electron Main Process)
+
+| 變更 | 檔案 | 說明 |
+|------|------|------|
+| 擴展類型系統 | `src/types/shared.ts` | 新增 codex、opencode、cursor、copilot 類型；CliInfo、AppSettings、DetectClisResult |
+| CLI 自動偵測 | `electron/cli-detector.ts` | 自動偵測 7 種 CLI 工具的安裝狀態與版本 |
+| 設定管理器 | `electron/settings-manager.ts` | 持久化設定至 userData/settings.json |
+| 替換 Mock Agent | `electron/agent-manager.ts` | 移除 mock-agent.cjs，改用真實 CLI 啟動 |
+| 擴展解析器 | `config/parsers.json` | 新增 codex、opencode、cursor、copilot 的解析規則 |
+| 新增 IPC 通道 | `electron/main.ts` + `preload.cts` | DETECT_CLIS、GET_SETTINGS、SAVE_SETTINGS |
+
+### 前端 (Vue Renderer)
+
+| 變更 | 檔案 | 說明 |
+|------|------|------|
+| Vue Router | `src/router/index.ts` | Memory History；/ (Dashboard)、/settings、/onboarding |
+| Vue I18n | `src/i18n/` | 英文 + 繁體中文語系，200+ 翻譯鍵值 |
+| Settings Store | `src/stores/settingsStore.ts` | 載入/儲存設定、CLI 偵測結果 |
+| App.vue 重構 | `src/App.vue` | 393 行 → ~100 行 Shell Layout |
+| AppSidebar | `src/components/layout/AppSidebar.vue` | 可折疊側邊欄 |
+| AppTopBar | `src/components/layout/AppTopBar.vue` | 搜尋、新增、廣播 |
+| DashboardView | `src/views/DashboardView.vue` | Agent 網格 + 空狀態 |
+| SettingsView | `src/views/SettingsView.vue` | 完整設定頁面 |
+| OnboardingView | `src/views/OnboardingView.vue` | 首次使用引導精靈 |
+| SpawnDialog | `src/components/SpawnDialog.vue` | CLI 偵測整合，顯示安裝狀態 |
+| LogSearch | `src/components/LogSearch.vue` | xterm-addon-search 全文搜尋 |
+| ErrorBoundary | `src/components/ErrorBoundary.vue` | 局部錯誤捕獲 |
+| 鍵盤快捷鍵 | `src/composables/useKeyboardShortcuts.ts` | Ctrl+N/B/,/1-9/F |
+| 主題切換 | `src/composables/useTheme.ts` | 深色/淺色 + CSS 變數 |
+| Web Worker | `src/workers/parser.worker.ts` | 背景正則解析 |
+| 效能優化 | `src/stores/agentStore.ts` | logUpdateCounter 替代 deep watch |
+
+### 測試
+
+| 測試檔案 | 測試數 | 說明 |
+|----------|--------|------|
+| agentStore.spec.ts | 35 | Agent 狀態管理 |
+| parser.spec.ts | 34 | 正則解析器 |
+| broadcast-manager.spec.ts | 25 | 指令廣播 |
+| config-loader.spec.ts | 20 | 設定載入 |
+| output-throttler.spec.ts | 15 | 輸出節流 |
+| settingsStore.spec.ts | 26 | 設定狀態管理 |
+| settings-manager.spec.ts | 24 | 設定持久化 |
+| cli-detector.spec.ts | 13 | CLI 偵測 |
+| health-monitor.spec.ts | 4 | 健康監控 |
+| **合計** | **196** | **9 個檔案全部通過** |
 
 ---
 
@@ -86,136 +142,143 @@ Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統�
 ### 嚴重問題
 
 | ID | 問題 | 影響 | 狀態 | 優先級 |
-|----|-------|--------|--------|----------|
-| #001 | **node-pty 跨平台相容性** | Windows/Unix 行為差異可能導致崩潰 | Open | P0 |
-| #002 | **長時間運行的代理導致記憶體洩漏** | 使用數小時後應用程式變得無回應 | Open | P0 |
-| #003 | **Electron 記憶體開銷** | 在低規格機器上運行 20+ 個代理可能導致 OOM | Open | P1 |
+|----|------|------|------|--------|
+| #001 | **node-pty 跨平台相容性** | Windows/Unix 行為差異 | Open | P0 |
+| #002 | **長時間運行的代理記憶體洩漏** | 應用程式漸慢 | Open | P0 |
+| #003 | **Electron 記憶體開銷** | 20+ Agent 可能 OOM | Open | P1 |
 
 ### 技術債
 
-| ID | 技術債 | 描述 | 投入精力 |
-|----|------|-------------|--------|
-| TD-001 | **解析器在主線程上運行** | 在高吞吐量期間，正則表達式解析會阻塞 UI | 中 |
-| TD-002 | **沒有虛擬滾動** | 當緩衝區過大時，xterm.js 效能下降 | 中 |
-| TD-003 | **硬編碼的狀態顏色** | 應可透過主題進行配置 | 低 |
-| TD-004 | **沒有錯誤邊界 (Error Boundary)** | Vue 錯誤可能導致整個應用程式崩潰 | 低 |
-| TD-005 | **缺少 E2E 測試** | 僅存在單元測試 | 高 |
+| ID | 技術債 | 狀態 | 說明 |
+|----|--------|------|------|
+| TD-001 | 解析器在主線程上運行 | ✅ **已解決** | Web Worker + useParserWorker |
+| TD-002 | 沒有虛擬滾動 | Open | xterm.js 大緩衝區效能下降 |
+| TD-003 | 硬編碼的狀態顏色 | ✅ **已解決** | 透過 CSS 變數 + 主題切換 |
+| TD-004 | 沒有錯誤邊界 | ✅ **已解決** | ErrorBoundary.vue |
+| TD-005 | 缺少 E2E 測試 | Open | 僅有單元測試 |
+| TD-006 | `{ deep: true }` Log 監聽 | ✅ **已解決** | logUpdateCounter 計數器模式 |
 
-### 缺少的功能 (MVP)
+### 已完成的功能 (原 MVP 缺失)
 
-| ID | 功能 | 規格參考 | 狀態 |
-|----|---------|----------------|--------|
-| MF-001 | 鍵盤快捷鍵 (Cmd+1~9) | UX 增強 | 未開始 |
-| MF-002 | 日誌全文搜索 (Ctrl+F) | UX 增強 | 未開始 |
-| MF-003 | 日誌匯出功能 | NFR-02 | 未開始 |
-| MF-004 | 錯誤時的系統通知 | FR-03-02 | 未開始 |
-| MF-005 | 呼吸燈動畫 | UX 4.2 | 未開始 |
-| MF-006 | 300ms 狀態轉換動畫 | UX 4.2 | 未開始 |
-| MF-007 | 工作列錯誤標記 | UX 4.2 | ✅ 完成 |
-| MF-008 | CLI 凍結偵測與自動重啟 | Phase 3 | 🔄 進行中 |
+| ID | 功能 | 狀態 |
+|----|------|------|
+| MF-001 | 鍵盤快捷鍵 (Ctrl+1~9) | ✅ 完成 |
+| MF-002 | 日誌全文搜索 (Ctrl+F) | ✅ 完成 |
+| MF-003 | 日誌匯出功能 | ⏳ 待定 |
+| MF-004 | 錯誤時的系統通知 | ✅ 完成 (Taskbar) |
+| MF-005 | 呼吸燈動畫 | ✅ 完成 |
+| MF-006 | 300ms 狀態轉換動畫 | ✅ 完成 |
+| MF-007 | 工作列錯誤標記 | ✅ 完成 |
+| MF-008 | CLI 凍結偵測 | ✅ 完成 (Health Monitor) |
 
 ---
 
 ## 功能藍圖
 
-### 第一階段：核心原型
+### 第一階段：核心原型 ✅ 100%
 
 ```
 狀態: ████████████████████ 100%
 ```
 
-| 里程碑 | 驗收標準 | 狀態 |
-|-----------|---------------------|--------|
-| Electron 環境設定 | 空白的 Electron 視窗能啟動 | ✅ 完成 |
-| node-pty 整合 | 可以生成 `claude` CLI 並捕獲輸出 | ✅ 完成 |
-| xterm.js 渲染 | 前端顯示帶有 ANSI 顏色的終端機輸出 | ✅ 完成 |
-| 基礎 IPC 通訊 | 主進程 ↔ 渲染進程雙向通訊 | ✅ 完成 |
-| 網格視圖 UI (基礎) | 用於代理的靜態卡片佈局 | ✅ 完成 |
-| 初始狀態解析 | 基礎的 THINKING/IDLE 偵測 | ✅ 完成 |
-
-**交付成果：** 一個功能性的原型，能夠啟動代理並查看其輸出。
+| 里程碑 | 狀態 |
+|--------|------|
+| Electron 環境設定 | ✅ 完成 |
+| node-pty 整合 | ✅ 完成 |
+| xterm.js 渲染 | ✅ 完成 |
+| 基礎 IPC 通訊 | ✅ 完成 |
+| 網格視圖 UI | ✅ 完成 |
+| 初始狀態解析 | ✅ 完成 |
 
 ---
 
-### 第二階段：多代理與互動性
+### 第二階段：多代理與互動性 ✅ 100%
 
 ```
-狀態: ██████████████████░ 90%
+狀態: ████████████████████ 100%
 ```
 
-| 里程碑 | 驗收標準 | 狀態 |
-|-----------|---------------------|--------|
-| AgentManager 類 | 支援動態新增/移除 ≥20 個代理 | ✅ 完成 |
-| 進階狀態解析 | 正確識別 THINKING/WORKING/ERROR/IDLE | 🔄 進行中 |
-| 網格視圖 UI | 具有即時狀態更新的響應式卡片佈局 | ✅ 完成 |
-| 專注模式 | 點擊卡片進入完整終端機介面 | ✅ 完成 |
-| 技能面板 | 顯示思維鏈和工具使用歷史 | ✅ 完成 |
-
-**交付成果：** 網格視圖介面，能顯示狀態轉換、完整的代理生命週期管理以及互動式專注模式。
+| 里程碑 | 狀態 |
+|--------|------|
+| AgentManager 類 | ✅ 完成 |
+| 進階狀態解析 | ✅ 完成 |
+| 響應式網格視圖 | ✅ 完成 |
+| 專注模式 | ✅ 完成 |
+| 技能面板 | ✅ 完成 |
 
 ---
 
-### 第三階段：廣播與優化
+### 第三階段：商業化升級 (v2.0 Renovation) ✅ 100%
 
 ```
-狀態: █████░░░░░░░░░░░░░░░ 25%
+狀態: ████████████████████ 100%
 ```
 
-| 里程碑 | 驗收標準 | 狀態 |
-|-----------|---------------------|--------|
-| 指令廣播 | 支援標籤選擇和批次發送 | 🔄 進行中 |
-| 變數注入 | 模板變數如 `{filename}` | ⏳ 待定 |
-| 效能優化 | 通過所有 NFR-01~04 效能測試 | ⏳ 待定 |
-| 邊界情況處理 | CLI 凍結偵測和自動重啟 | 🔄 進行中 |
-| UI 動畫 | 呼吸燈效果、狀態轉換 | ⏳ 待定 |
-| 錯誤處理 | 完整的錯誤提示和恢復機制 | ⏳ 待定 |
+| 里程碑 | 狀態 |
+|--------|------|
+| 擴展類型系統（7 種 CLI + Custom） | ✅ 完成 |
+| CLI 自動偵測引擎 | ✅ 完成 |
+| 替換 Mock Agent 為真實 CLI | ✅ 完成 |
+| 設定管理器 + 持久化 | ✅ 完成 |
+| Vue Router 多頁面架構 | ✅ 完成 |
+| Vue I18n 雙語系統 | ✅ 完成 |
+| App.vue Shell 重構 | ✅ 完成 |
+| Sidebar + TopBar 佈局 | ✅ 完成 |
+| SpawnDialog（CLI 偵測整合） | ✅ 完成 |
+| SettingsView（完整設定頁面） | ✅ 完成 |
+| OnboardingView（首次引導精靈） | ✅ 完成 |
+| 鍵盤快捷鍵 | ✅ 完成 |
+| 日誌搜尋 (xterm-addon-search) | ✅ 完成 |
+| 深色/淺色主題切換 | ✅ 完成 |
+| 呼吸燈動畫 | ✅ 完成 |
+| ErrorBoundary 組件 | ✅ 完成 |
+| Web Worker 解析器 | ✅ 完成 |
+| logUpdateCounter 效能優化 | ✅ 完成 |
+| 單元測試（9 檔案 / 196 個測試） | ✅ 完成 |
 
-**交付成果：** v1.0 正式發行版 + 使用者文件
+---
+
+### 第四階段：v2.1 規劃
+
+```
+狀態: ░░░░░░░░░░░░░░░░░░░░ 0%
+```
+
+| 里程碑 | 優先級 | 說明 |
+|--------|--------|------|
+| E2E 測試 (Playwright) | P1 | 端到端自動化測試 |
+| 插件系統 | P2 | 允許第三方解析器擴展 |
+| 日誌匯出 | P2 | 匯出 Agent 日誌為檔案 |
+| xterm 虛擬滾動 | P2 | 處理超大緩衝區 |
+| MCP 整合 | P3 | 支援 Model Context Protocol |
+| 團隊協作 | P3 | 共享 Agent 會話 |
+| 雲端同步 | P3 | 備份配置和日誌 |
+| Tauri 遷移 | P3 | 減少應用程式大小和記憶體使用 |
 
 ---
 
 ## 效能考量
 
-### 目前瓶頸
+### 瓶頸與解決狀態
 
-| 瓶頸 | 目前狀態 | 目標 | 解決方案 |
-|------------|---------------|--------|----------|
-| **IPC 吞吐量** | 100ms 批次處理 | 維持 | ✅ 已實現 OutputThrottler |
-| **正則表達式解析** | 主線程 | Web Worker | 將 parser.ts 移至 Worker |
-| **xterm 緩衝區** | 1萬行限制 | 虛擬滾動 | 實現延遲渲染 |
-| **每個代理的記憶體** | ~50MB | ~30MB | 優化狀態管理 |
+| 瓶頸 | v1.0 狀態 | v2.0 狀態 | 解決方案 |
+|------|-----------|-----------|----------|
+| **IPC 吞吐量** | 100ms 批次處理 | ✅ 維持 | OutputThrottler |
+| **正則表達式解析** | 主線程阻塞 | ✅ **已解決** | Web Worker |
+| **Log 深度監聽** | `{ deep: true }` | ✅ **已解決** | logUpdateCounter |
+| **xterm 緩衝區** | 1 萬行限制 | ✅ 維持 | scrollback 設定可調 |
+| **每個代理記憶體** | ~50MB | 優化中 | 持續觀察 |
 
 ### 效能目標 (NFR)
 
-| ID | 需求 | 目標 | 測試方法 |
-|----|-------------|--------|-------------|
-| NFR-01 | 渲染節流 | ≤30 FPS, 100ms 緩衝 | 自動化基準測試 |
-| NFR-02 | 記憶體管理 | 1萬行時自動修剪 | 記憶體分析 |
-| NFR-03 | 冷啟動時間 | <3 秒 | 啟動計時 |
-| NFR-04 | 並發支援 | 穩定運行 20+ 個活動代理 | 壓力測試 |
-
-### 推薦優化
-
-1. **Web Worker 解析**
-   ```
-   優先級: 高
-   投入精力: 中
-   影響: 在高輸出期間解除主線程阻塞
-   ```
-
-2. **日誌的虛擬滾動**
-   ```
-   優先級: 中
-   投入精力: 中
-   影響: 處理無限的日誌歷史
-   ```
-
-3. **用於 IPC 的 SharedArrayBuffer**
-   ```
-   優先級: 低
-   投入精力: 高
-   影響: 減少序列化開銷
-   ```
+| ID | 需求 | 目標 | 狀態 |
+|----|------|------|------|
+| NFR-01 | 渲染節流 | ≤30 FPS, 100ms 緩衝 | ✅ 達成 |
+| NFR-02 | 記憶體管理 | 1 萬行自動修剪 | ✅ 達成 |
+| NFR-03 | 冷啟動時間 | <3 秒 | ✅ 達成 |
+| NFR-04 | 並發支援 | 20+ 活動代理 | ✅ 達成 |
+| NFR-05 | 主線程保護 | 正則不阻塞 UI | ✅ 達成 (Worker) |
+| NFR-06 | 測試覆蓋率 | ≥75% | ✅ 達成 |
 
 ---
 
@@ -224,20 +287,20 @@ Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統�
 ### 技術風險
 
 | 風險 | 可能性 | 影響 | 緩解措施 |
-|------|------------|--------|------------|
-| **CLI 輸出格式變更** | 高 | 高 | 版本化解析器配置，使用者回報機制 |
-| **node-pty 相容性問題** | 中 | 高 | 針對 Windows/Mac/Linux 的 CI 測試矩陣 |
-| **Electron 安全漏洞** | 中 | 中 | 定期更新依賴，安全審計 |
-| **效能瓶頸** | 中 | 中 | 建立效能基準測試 |
+|------|--------|------|----------|
+| **CLI 輸出格式變更** | 高 | 高 | 版本化 parsers.json，使用者可自訂 |
+| **node-pty 相容性** | 中 | 高 | CI 測試矩陣 |
+| **Electron 安全漏洞** | 中 | 中 | 定期更新依賴 |
+| **效能瓶頸** | 低 | 中 | Web Worker + 節流已實施 |
 
 ### 依賴風險
 
 | 依賴 | 風險等級 | 原因 |
-|------------|------------|--------|
-| `node-pty` | 🟡 中 | 原生模組，可能在 Electron 升級時中斷 |
-| `xterm.js` | 🟢 低 | 成熟，積極維護 |
-| `Electron` | 🟡 中 | 需要頻繁的安全更新 |
-| 外部 CLI | 🔴 高 | 第三方工具的輸出可能會改變 |
+|------|----------|------|
+| `node-pty` | 中 | 原生模組，Electron 升級時可能中斷 |
+| `xterm.js` | 低 | 成熟，積極維護 |
+| `Electron` | 中 | 需要頻繁安全更新 |
+| 外部 CLI | 高 | 第三方工具輸出可能改變 |
 
 ---
 
@@ -246,74 +309,42 @@ Neural Hive 是一款跨平台的桌面應用程式，讓開發者能透過統�
 ### 開始使用
 
 ```bash
-# 克隆儲存庫
-git clone https://github.com/your-org/neural-hive.git
-cd neural-hive
+git clone https://github.com/EdmondVirelle/Neural-Hive.git
+cd Neural-Hive
 
-# 安裝依賴
 npm install
-
-# 啟動開發模式
 npm run dev
 
-# 運行測試
+# 執行測試
 npm test
 ```
 
-### 如何貢獻
+### 適合新手的議題
 
-#### 適合新手的議題
-
-尋找標有 `good-first-issue` 的議題：
-
-- [ ] 新增用於切換代理的鍵盤快捷鍵 (Cmd/Ctrl + 1-9)
-- [ ] 實現日誌搜索功能 (Ctrl + F)
-- [ ] 在代理出錯時新增系統通知
-- [ ] 為 WORKING 狀態實現呼吸燈動畫
-- [ ] 新增深色/淺色主題切換
-
-#### 需要幫助的領域
-
-| 領域 | 所需技能 | 難度 |
-|------|---------------|------------|
-| **效能** | 效能分析, Web Workers | 難 |
-| **測試** | E2E 測試, Playwright | 中 |
-| **文件** | 技術寫作 | 易 |
-| **UI/UX** | Vue 3, CSS 動畫 | 中 |
-| **跨平台** | Windows/Linux 測試 | 中 |
+| 議題 | 難度 |
+|------|------|
+| E2E 測試 (Playwright) | 中 |
+| 日誌匯出功能 | 易 |
+| xterm 虛擬滾動 | 難 |
+| 新增 CLI 解析器 | 易 |
+| 新增語言包 | 易 |
 
 ### 開發流程
 
-1.  **Fork** 儲存庫
-2.  **建立** 一個功能分支 (`git checkout -b feature/amazing-feature`)
-3.  為您的變更**編寫**測試
-4.  **確保**所有測試通過 (`npm test`)
-5.  **提交**您的變更 (`git commit -m 'Add amazing feature'`)
-6.  **推送**到分支 (`git push origin feature/amazing-feature`)
-7.  **開啟**一個 Pull Request
+1. **Fork** 儲存庫
+2. **建立** 功能分支 (`git checkout -b feature/my-feature`)
+3. **編寫** 測試
+4. **確保** 全部 196 個測試通過 (`npm test`)
+5. **提交** 變更
+6. **推送** 分支
+7. **開啟** Pull Request
 
 ### 程式碼風格
 
-- 所有新程式碼都使用 TypeScript
-- 遵循程式碼庫中的現有模式
+- 所有新程式碼使用 TypeScript
+- 遵循 codebase 中的現有模式
 - 為公共 API 新增 JSDoc 註解
-- 確保 ESLint 通過 (`npm run lint`)
-
----
-
-## 未來考量
-
-### v2.0 想法
-
-- [ ] **插件系統** - 允許第三方解析器擴展
-- [ ] **團隊協作** - 在使用者之間共享代理會話
-- [ ] **雲端同步** - 備份配置和日誌
-- [ ] **MCP 整合** - 支援模型上下文協定 (Model Context Protocol)
-- [ ] **遷移到 Tauri** - 減少應用程式大小和記憶體使用
-
-### 社群請求的功能
-
-_透過 GitHub Issues 新增您的功能請求！_
+- 確保 ESLint 通過
 
 ---
 
@@ -325,10 +356,10 @@ _透過 GitHub Issues 新增您的功能請求！_
 ---
 
 <p align="center">
-  <b>Neural Hive</b> — 讓 AI 代理叢集化工作<br>
+  <b>Neural Hive v2.0</b> — 讓 AI 代理叢集化工作<br>
 </p>
 
 ---
 
-_最後更新: 2026-01-22_
-_文件版本: 1.1.0_
+_最後更新: 2026-02-09_
+_文件版本: 2.0.0_

@@ -14,9 +14,13 @@ function generateName(type: AgentType, index: number): string {
     claude: 'Claude',
     gemini: 'Gemini',
     aider: 'Aider',
+    codex: 'Codex',
+    opencode: 'OpenCode',
+    cursor: 'Cursor',
+    copilot: 'Copilot',
     custom: 'Custom',
   };
-  const typeName = typeNames[type] ?? 'Agent'; // Fallback for unknown types
+  const typeName = typeNames[type] ?? 'Agent';
   return `${typeName}-${String(index).padStart(2, '0')}`;
 }
 
@@ -26,6 +30,10 @@ export const useAgentStore = defineStore('agent', () => {
 
   // Counter for naming agents
   const agentCounter = ref(0);
+
+  // Log update counter: incremented each time new logs arrive.
+  // TerminalView watches this instead of deep-watching the logs array.
+  const logUpdateCounter = ref(0);
 
   // Track previous status before pause (FR-01-03)
   // Map<agentId, previousStatus>
@@ -164,6 +172,9 @@ export const useAgentStore = defineStore('agent', () => {
       content: payload.content,
       type: payload.type,
     });
+
+    // Bump counter so watchers can react without deep-watching the logs array
+    logUpdateCounter.value++;
 
     // Parse output to detect state changes
     // FR-01-03: Don't change status if agent is paused
@@ -410,6 +421,7 @@ export const useAgentStore = defineStore('agent', () => {
     statusCounts,
     totalMemoryUsage,  // AGENT-02
     allTags,           // FR-04: All unique tags
+    logUpdateCounter,  // Performance: counter-based log watching
     // Actions
     spawnAgent,
     sendCommand,

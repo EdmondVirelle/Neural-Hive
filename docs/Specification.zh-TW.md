@@ -6,8 +6,8 @@
 |------|------|
 | **專案名稱** | AI Agent Orchestrator |
 | **專案代號** | Neural Hive |
-| **版本** | v1.0.0 |
-| **日期** | 2026-01-22 |
+| **版本** | v2.0.0 |
+| **日期** | 2026-02-09 |
 
 ---
 
@@ -26,16 +26,30 @@
 
 ### 1.1 目標 (Goal)
 
-開發一款**跨平台的桌面應用程式**，旨在解決專業開發者需要同時操作多個 AI CLI 工具（如 Claude Code, Gemini CLI, OpenAI Codex）的痛點。
+開發一款**跨平台的桌面應用程式**，旨在解決專業開發者需要同時操作多個 AI CLI 工具的痛點。
 
-本系統將作為一個「**圖形化指揮中心**」，允許使用者：
+本系統作為一個「**圖形化指揮中心**」，允許使用者：
 - 並行管理多個 AI 代理（Agent）的生命週期
+- 自動偵測已安裝的 CLI 工具
 - 監控其思考與工具使用狀態
 - 支援批量指令下達
+- 提供雙語介面（英文/繁體中文）與主題切換
 
 ### 1.2 範圍 (Scope)
 
-**支援對象**：已訂閱 Claude Pro / Gemini Advanced 的使用者，利用其提供的 CLI 工具進行操作（非 API 串接）。
+**支援對象**：已訂閱 Claude Pro / Gemini Advanced / GitHub Copilot 等服務的使用者，利用其提供的 CLI 工具進行操作（非 API 串接）。
+
+**支援 CLI 工具**（v2.0）：
+
+| CLI 工具 | 指令 | 說明 |
+|----------|------|------|
+| Claude Code | `claude` | Anthropic 的 AI 編碼助手 |
+| Gemini CLI | `gemini` | Google 的 AI CLI 工具 |
+| Aider | `aider` | 開源 AI 配對程式設計工具 |
+| Codex CLI | `codex` | OpenAI 的 CLI 工具 |
+| OpenCode | `opencode` | 開源 AI 編碼助手 |
+| Cursor | `cursor` | AI 程式碼編輯器 CLI |
+| GitHub Copilot | `gh copilot` | 透過 GitHub CLI 擴展使用 |
 
 **核心價值**：
 
@@ -44,6 +58,8 @@
 | **並行處理** | 同時執行多個 Agent 任務（如：Agent A 寫前端，Agent B 寫後端） |
 | **視覺化監控** | 將 CLI 的純文字輸出轉化為狀態儀表板（思考中、執行工具、錯誤） |
 | **成本優化** | 利用既有訂閱額度，無需額外 API Token 費用 |
+| **自動偵測** | 啟動時自動掃描已安裝的 CLI 工具 |
+| **多語系** | 英文/繁體中文雙語介面 |
 
 ---
 
@@ -60,18 +76,25 @@
 │  │  Node.js + TypeScript │  │  │   Vue 3 + TypeScript    │  │
 │  │  ─────────────────────│  │  │  ─────────────────────  │  │
 │  │  • node-pty (TTY)     │  │  │  • Pinia (State Mgmt)   │  │
-│  │  • Process Manager    │◄─┼──┤  • Tailwind CSS         │  │
-│  │  • Regex Parser       │──┼─►│  • Shadcn/ui            │  │
-│  │  • IPC Handler        │  │  │  • xterm.js (Terminal)  │  │
-│  └───────┬──────────────┘  │  └─────────────────────────┘  │
-└─────────┘└───────────────────────────────────────────────────┘
+│  │  • Agent Manager      │◄─┼──┤  • Vue Router           │  │
+│  │  • CLI Detector       │──┼─►│  • Vue I18n             │  │
+│  │  • Settings Manager   │  │  │  • Tailwind + Shadcn/ui │  │
+│  │  • Broadcast Manager  │  │  │  • xterm.js + Search    │  │
+│  │  • Health Monitor     │  │  │  • Web Worker (Parser)  │  │
+│  │  • IPC Handler        │  │  │  • Error Boundary       │  │
+│  └───────────────────────┘  │  └─────────────────────────┘  │
+└─────────────────────────────┴───────────────────────────────┘
                               │
                               ▼
               ┌───────────────────────────────┐
               │     External CLI Processes    │
-              │  ┌─────────┐    ┌──────────┐  │
-              │  │ Claude  │    │  Gemini  │  │
-              │  └─────────┘    └──────────┘  │
+              │  ┌────────┐  ┌────────┐      │
+              │  │ Claude │  │ Gemini │      │
+              │  ├────────┤  ├────────┤      │
+              │  │ Aider  │  │ Codex  │      │
+              │  ├────────┤  ├────────┤      │
+              │  │Copilot │  │OpenCode│      │
+              │  └────────┘  └────────┘      │
               └───────────────────────────────┘
 ```
 
@@ -80,11 +103,17 @@
 | Application Shell | Electron | 提供跨平台桌面環境 |
 | Backend (Main Process) | Node.js + TypeScript | 核心邏輯處理 |
 | Terminal Emulation | node-pty | 核心組件，用於偽裝 TTY |
+| CLI Detection | cli-detector.ts | 自動偵測已安裝的 AI CLI 工具 |
+| Settings Persistence | settings-manager.ts | 使用者設定持久化（JSON） |
+| Health Monitoring | health-monitor.ts | 偵測 Agent 凍結與異常 |
 | IPC Communication | Electron IPC Main/Renderer | 進程間通訊 |
-| Frontend (Renderer Process) | Vue 3 + TypeScript | 使用者介面 |
-| State Management | Pinia | 管理所有 Agent 的即時狀態 |
+| Frontend (Renderer) | Vue 3 + TypeScript | 使用者介面 |
+| State Management | Pinia | 管理所有 Agent 與設定的即時狀態 |
+| Routing | Vue Router (Memory History) | 頁面路由（Dashboard / Settings / Onboarding） |
+| Internationalization | Vue I18n | 英文/繁體中文雙語支援 |
 | UI Framework | Tailwind CSS + Shadcn/ui | 現代化 UI 組件庫 |
-| Terminal Rendering | xterm.js | 用於單點控制時的終端機渲染 |
+| Terminal Rendering | xterm.js + xterm-addon-search | 終端機渲染與日誌搜尋 |
+| Performance | Web Worker | 將正則解析移至背景線程 |
 
 ### 2.2 資料流向 (Data Flow)
 
@@ -107,10 +136,59 @@
 
 1. **Input**：使用者在 Vue 前端輸入指令 / 點擊按鈕
 2. **Process**：Electron Main Process 透過 node-pty 將指令寫入對應的子程序 (stdin)
-3. **Execution**：外部 CLI (Claude/Gemini) 執行並產生輸出
+3. **Execution**：外部 CLI 執行並產生輸出
 4. **Capture**：node-pty 攔截 stdout（含 ANSI 顏色碼）
 5. **Parsing**：正則表達式引擎分析輸出流，判斷當前狀態 (Thinking/Tool Use)
 6. **Output**：解析後的狀態與原始 Log 透過 IPC 廣播回 Vue 前端進行渲染
+
+### 2.3 模組結構 (Module Structure)
+
+```
+electron/
+├── main.ts                 # Electron 主進程入口
+├── preload.cts             # 安全的 contextBridge API
+├── agent-manager.ts        # Agent 生命週期管理
+├── cli-detector.ts         # CLI 自動偵測引擎
+├── settings-manager.ts     # 設定持久化
+├── config-loader.ts        # 解析器設定載入
+├── broadcast-manager.ts    # 指令廣播管理
+├── output-throttler.ts     # 輸出節流器
+├── health-monitor.ts       # Agent 健康監控
+├── resource-monitor.ts     # 系統資源監控
+└── taskbar-notifier.ts     # 工作列通知
+src/
+├── main.ts                 # Vue 應用入口
+├── App.vue                 # Shell Layout (Sidebar + TopBar + Router)
+├── router/index.ts         # Vue Router 設定
+├── i18n/                   # 國際化
+│   ├── index.ts
+│   ├── en.ts               # 英文語系
+│   └── zh-TW.ts            # 繁體中文語系
+├── stores/
+│   ├── agentStore.ts       # Agent 狀態管理
+│   └── settingsStore.ts    # 設定狀態管理
+├── views/
+│   ├── DashboardView.vue   # 主儀表板（Agent 網格）
+│   ├── SettingsView.vue    # 設定頁面
+│   └── OnboardingView.vue  # 首次使用引導
+├── components/
+│   ├── layout/
+│   │   ├── AppSidebar.vue  # 可折疊側邊欄
+│   │   └── AppTopBar.vue   # 頂部操作列
+│   ├── AgentCard.vue       # Agent 狀態卡片
+│   ├── FocusMode.vue       # 全螢幕終端模式
+│   ├── TerminalView.vue    # xterm.js 終端渲染
+│   ├── SpawnDialog.vue     # 新增 Agent 對話框
+│   ├── LogSearch.vue       # 日誌搜尋面板
+│   ├── ErrorBoundary.vue   # 錯誤邊界組件
+│   └── SkillsPanel.vue     # 技能面板
+├── composables/
+│   ├── useKeyboardShortcuts.ts  # 快捷鍵
+│   ├── useTheme.ts              # 主題切換
+│   └── useParserWorker.ts       # Web Worker 解析
+└── workers/
+    └── parser.worker.ts    # 背景解析 Worker
+```
 
 ---
 
@@ -120,156 +198,109 @@
 
 | ID | 功能 | 說明 |
 |----|------|------|
-| **FR-01-01** | 新增代理人 | 使用者可選擇代理人類型（Claude, Gemini, Custom Script）、指定 **自訂名稱**，並指定工作目錄（cwd）來啟動一個新實例 |
-| **FR-01-02** | 多重實例 | 系統需支援同時開啟 **N 個（建議上限 20+）** 獨立的 CLI 程序 |
-| **FR-01-03** | 生命週期控制 | 支援對個別代理人進行「**暫停**（停止輸入）」、「**重啟**（Kill & Spawn）」與「**銷毀**」操作 |
-| **FR-01-04** | 環境隔離 | 每個代理人應運行在獨立的 Process 中，確保記憶體與變數不互相干擾 |
+| **FR-01-01** | 新增代理人 | 使用者可選擇代理人類型（7 種 CLI + Custom）、指定自訂名稱，並指定工作目錄來啟動實例 |
+| **FR-01-02** | 多重實例 | 系統支援同時開啟 **20+** 獨立的 CLI 程序 |
+| **FR-01-03** | 生命週期控制 | 支援「暫停」、「重啟」與「銷毀」操作 |
+| **FR-01-04** | 環境隔離 | 每個代理人運行在獨立 Process 中 |
+| **FR-01-05** | CLI 自動偵測 | 系統自動偵測已安裝的 CLI 工具，顯示安裝狀態與版本 |
+| **FR-01-06** | 自訂路徑 | 使用者可在設定中覆蓋 CLI 的預設路徑 |
 
 ### 3.2 終端機互動與偽裝 (Terminal Interaction & Emulation)
 
 | ID | 功能 | 說明 |
 |----|------|------|
-| **FR-02-01** | TTY 偽裝 | 必須欺騙 CLI 工具，使其認為運行於標準終端機中，以保留 ANSI 顏色與互動式提示（如 y/n 確認） |
-| **FR-02-02** | 互動模式 | 使用者可點擊進入特定 Agent 的「專注模式」，此時應提供完整的 xterm.js 介面，允許直接鍵盤輸入 |
+| **FR-02-01** | TTY 偽裝 | 欺騙 CLI 工具使其認為運行於標準終端機中 |
+| **FR-02-02** | 互動模式 | 專注模式提供完整 xterm.js 介面，支援鍵盤輸入 |
+| **FR-02-03** | 日誌搜尋 | 在專注模式中支援 `Ctrl+F` 全文搜尋（xterm-addon-search） |
 
 ### 3.3 狀態解析與視覺化 (State Parsing & Visualization)
 
 | ID | 功能 | 說明 |
 |----|------|------|
-| **FR-03-01** | 關鍵字觸發 | 系統需內建針對不同 CLI 的解析規則庫（Regex Ruleset） |
-| **FR-03-02** | 狀態映射 | 將解析結果映射為預定義狀態 |
-| **FR-03-03** | 技能儀表板 | 在 Grid View 中顯示當前正在執行的操作 |
+| **FR-03-01** | 關鍵字觸發 | 內建 7 種 CLI 的解析規則庫（Regex Ruleset） |
+| **FR-03-02** | 狀態映射 | 將解析結果映射為 IDLE/THINKING/WORKING/ERROR/WAITING_USER |
+| **FR-03-03** | 技能儀表板 | 在卡片與專注模式中顯示當前執行的操作 |
+| **FR-03-04** | Web Worker 解析 | 正則解析在 Web Worker 中執行，不阻塞主線程 |
 
-**FR-03-01 關鍵字觸發 - 解析規則範例**：
-
-```javascript
-// Claude CLI
-{
-  "thinking": /Thinking\.\.\./,
-  "running_command": /Running command\.\.\./,
-  "reading_file": /Reading file\.\.\./
-}
-
-// Gemini CLI
-{
-  "tool_use": /\ \[Tool Use\]/, 
-  "analysis": /Analysis/
-}
-```
-
-**FR-03-02 狀態映射**：
+**狀態映射**：
 
 | 狀態 | 代碼 | 說明 | 顏色 |
 |------|------|------|------|
-| 閒置 | `IDLE` | 等待輸入 | 🟢 綠色 |
-| 推理中 | `THINKING` | AI 正在思考 | 🟡 黃色 |
-| 工作中 | `WORKING` | 執行 Skill/Tool 中 | 🔵 藍色 |
-| 錯誤 | `ERROR` | 發生錯誤 | 🔴 紅色 |
-| 等待確認 | `WAITING_USER` | 等待使用者確認（如 y/n） | 🟠 橙色 |
-
-**FR-03-03 技能儀表板顯示範例**：
-
-```
-┌─────────────────────────────────┐
-│  Agent-01                   🟡  │
-│  ─────────────────────────────  │
-│  🔍 Searching: WPF Bindings     │
-│  ─────────────────────────────  │
-│  > Analyzing project structure  │
-│  > Found 3 relevant files...    │
-└─────────────────────────────────┘
-```
+| 閒置 | `IDLE` | 等待輸入 | 綠色 |
+| 推理中 | `THINKING` | AI 正在思考 | 黃色 |
+| 工作中 | `WORKING` | 執行 Skill/Tool 中 | 藍色（呼吸燈） |
+| 錯誤 | `ERROR` | 發生錯誤 | 紅色 |
+| 等待確認 | `WAITING_USER` | 等待使用者確認 | 橙色 |
 
 ### 3.4 指令廣播系統 (Command Broadcasting)
 
 | ID | 功能 | 說明 |
 |----|------|------|
-| **FR-04-01** | 批量指令 | 支援透過「**標籤（Tags）**」或「**全選**」方式，將同一段 Prompt 同時發送給多個 Agent |
-| **FR-04-02** | 變數注入 | （選配）支援簡單的變數替換 |
+| **FR-04-01** | 批量指令 | 支援透過「標籤（Tags）」或「全選」方式批量發送指令 |
+| **FR-04-02** | 變數注入 | 支援簡單的變數替換（如 `{filename}`） |
 
-**FR-04-02 變數注入範例**：
+### 3.5 設定與持久化 (Settings & Persistence)
 
-```
-模板：Check file {filename}
-Agent-01: Check file src/main.ts
-Agent-02: Check file src/utils.ts
-Agent-03: Check file src/config.ts
-```
+| ID | 功能 | 說明 |
+|----|------|------|
+| **FR-05-01** | 設定頁面 | 提供完整的設定 UI（一般、CLI 路徑、效能、關於） |
+| **FR-05-02** | 持久化 | 設定自動儲存至 `userData/settings.json` |
+| **FR-05-03** | 語言切換 | 支援英文/繁體中文即時切換 |
+| **FR-05-04** | 主題切換 | 支援深色/淺色主題 |
+| **FR-05-05** | 首次引導 | Onboarding 精靈：歡迎 → CLI 偵測 → 快速開始 → 完成 |
+
+### 3.6 鍵盤快捷鍵 (Keyboard Shortcuts)
+
+| 快捷鍵 | 功能 |
+|--------|------|
+| `Ctrl+N` | 新增 Agent |
+| `Ctrl+B` | 開啟廣播面板 |
+| `Ctrl+,` | 開啟設定 |
+| `Ctrl+1~9` | 聚焦第 N 個 Agent |
+| `Ctrl+F` | 日誌搜尋（專注模式） |
+| `Escape` | 返回儀表板 |
 
 ---
 
 ## 4. UI/UX 設計規範 (UI/UX Requirements)
 
-### 4.1 介面佈局 (Layout)
-
-#### 監控視圖 (Dashboard Grid)
+### 4.1 介面架構 (Layout Architecture)
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  Neural Hive - AI Agent Orchestrator                    [─][□][×]  │
-├────────────────────────────────────────────────────────────────────┤
-│  [+ New Agent]  [📢 Broadcast]  [⚙ Settings]           Filter: All │
-├──────────────────┬──────────────────┬──────────────────────────────┤
-│                  │                  │                              │
-│  ┌────────────┐  │  ┌────────────┐  │  ┌────────────┐              │
-│  │ Agent-01 🟢│  │  │ Agent-02 🟡│  │  │ Agent-03 🔵│              │
-│  │ Claude     │  │  │ Gemini     │  │  │ Claude     │              │
-│  │ ──────────│  │  │ ──────────│  │  │ ──────────│              │
-│  │ IDLE       │  │  │ THINKING   │  │  │ WORKING    │              │
-│  │ ──────────│  │  │ ──────────│  │  │ ──────────│              │
-│  │ > Ready    │  │  │ > Analyz.. │  │  │ 🔧 Edit... │              │
-│  │ CPU: 2%    │  │  │ CPU: 45%   │  │  │ CPU: 12%   │              │
-│  └────────────┘  │  └────────────┘  │  └────────────┘              │
-│                  │                  │                              │
-├──────────────────┴──────────────────┴──────────────────────────────┤
-│  Status: 3 agents active | Memory: 1.2 GB | Uptime: 02:34:12       │
-└────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Neural Hive v2.0                          │
+├──────┬──────────────────────────────────────────────────────┤
+│      │  ┌──────────────────────────────────────────────┐    │
+│  S   │  │  AppTopBar: Search | +Spawn | Broadcast      │    │
+│  I   │  ├──────────────────────────────────────────────┤    │
+│  D   │  │                                              │    │
+│  E   │  │  <router-view />                             │    │
+│  B   │  │                                              │    │
+│  A   │  │  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐    │    │
+│  R   │  │  │Agent1│  │Agent2│  │Agent3│  │Agent4│    │    │
+│      │  │  └──────┘  └──────┘  └──────┘  └──────┘    │    │
+│  🌐  │  │                                              │    │
+│  🌙  │  │  Dashboard / Settings / Onboarding           │    │
+│      │  └──────────────────────────────────────────────┘    │
+└──────┴──────────────────────────────────────────────────────┘
 ```
 
-**卡片內容**：
-- Agent 名稱與類型標籤
-- 當前狀態燈號 (🟢/🟡/🔴)
-- 最近 3 行 Log 預覽
-- **當前工作目錄 (CWD)** (顯示於底部)
-- CPU/記憶體佔用（選配）
-
-#### 專注視圖 (Focus Mode)
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Agent-02: Gemini                                [Back] [⟲] [×]   │
-├─────────────────────────────────┬──────────────────────────────────┤
-│                                 │  Chain of Thought                │
-│  ┌─────────────────────────────┐│  ────────────────────────────    │
-│  │ $ gemini-cli                ││  1. 📖 Reading project files     │
-│  │                             ││  2. 🔍 Searching for patterns    │
-│  │ > Analyzing codebase...     ││  3. 💭 Formulating response      │
-│  │ > Found 12 TypeScript files ││                                  │
-│  │ > Checking dependencies...  ││  ────────────────────────────    │
-│  │                             ││  Skills Used                     │
-│  │ [Thinking...]               ││  ────────────────────────────    │
-│  │                             ││  ☑ FileSearch (3 calls)          │
-│  │                             ││  ☑ CodeAnalysis (1 call)         │
-│  │ _                           ││  ☐ WebFetch (pending)            │
-│  └─────────────────────────────┘│                                  │
-│  ┌─────────────────────────────┐│                                  │
-│  │ Enter command...         [⏎]││                                  │
-│  └─────────────────────────────┘│                                  │
-└─────────────────────────────────┴──────────────────────────────────┘
-```
-
-**佈局說明**：
-- **左側**：完整 xterm.js 終端機畫面
-- **右側**：解析後的「思考鏈 (Chain of Thought)」與「已用 Skills 歷史清單」
+- **AppSidebar**：可折疊側邊欄，包含導覽、Agent 統計、語言/主題切換
+- **AppTopBar**：搜尋列、新增 Agent、廣播、活躍 Agent 計數
+- **Router View**：Dashboard（網格）/ Settings / Onboarding
 
 ### 4.2 使用者體驗 (UX)
 
-| 項目 | 規範 |
-|------|------|
-| **視覺回饋** | 當 Agent 處於 `WORKING` 狀態時，卡片邊框應有**呼吸燈效果** |
-| **錯誤警示** | 若 CLI 輸出 `Error` 或 `Exception`，該卡片應**立即變紅**並在 Taskbar圖示上顯示標記 |
-| **狀態轉換** | 狀態變化應有 300ms 的過渡動畫 |
-| **響應式佈局** | Grid 應根據視窗大小自動調整欄數（1-4 欄） |
+| 項目 | 規範 | 狀態 |
+|------|------|------|
+| **呼吸燈效果** | WORKING 狀態卡片邊框呼吸燈動畫 | ✅ 完成 |
+| **錯誤警示** | ERROR 卡片立即變紅 + Taskbar 標記 | ✅ 完成 |
+| **狀態轉換** | 300ms 過渡動畫 | ✅ 完成 |
+| **響應式佈局** | Grid 自動調整 1-4 欄 | ✅ 完成 |
+| **毛玻璃效果** | Glassmorphism 設計語言 | ✅ 完成 |
+| **空狀態** | 無 Agent 時顯示引導式空狀態頁面 | ✅ 完成 |
+| **鍵盤導覽** | 完整的快捷鍵支援 | ✅ 完成 |
+| **雙語介面** | 英文/繁體中文即時切換 | ✅ 完成 |
 
 ---
 
@@ -277,106 +308,77 @@ Agent-03: Check file src/config.ts
 
 ### 5.1 效能要求 (Performance)
 
-| ID | 需求 | 規格 |
-|----|------|------|
-| **NFR-01** | 渲染節流 (Throttling) | 前端 Log 更新頻率不得高於 **30 FPS**，後端需實作 Buffer 機制（每 **100ms** 打包一次數據），防止高併發輸出導致 Electron 卡死 |
-| **NFR-02** | 記憶體管理 | 當 Agent 輸出超過 **10,000 行**時，前端 xterm.js 需自動清理舊緩衝區 (Trim Buffer) |
-| **NFR-03** | 啟動時間 | 應用程式冷啟動時間應小於 **3 秒** |
-| **NFR-04** | 併發支援 | 系統應能穩定運行 **20+ 個**同時活躍的 Agent |
+| ID | 需求 | 規格 | 狀態 |
+|----|------|------|------|
+| **NFR-01** | 渲染節流 | ≤30 FPS，100ms 批次處理 | ✅ OutputThrottler |
+| **NFR-02** | 記憶體管理 | 10,000 行自動修剪 | ✅ xterm scrollback |
+| **NFR-03** | 啟動時間 | <3 秒 | ✅ |
+| **NFR-04** | 併發支援 | 穩定運行 20+ Agent | ✅ |
+| **NFR-05** | 主線程保護 | 正則解析不阻塞 UI | ✅ Web Worker |
+| **NFR-06** | Log 監聽效能 | 基於計數器而非深度監聽 | ✅ logUpdateCounter |
 
 ### 5.2 擴充性 (Extensibility)
 
 | ID | 需求 | 規格 |
 |----|------|------|
-| **NFR-05** | 設定檔驅動 | 解析規則（Regex）應存於 **JSON 設定檔**中，允許使用者不需重新編譯即可新增對其他 CLI 工具的支援 |
-| **NFR-06** | 插件架構 | 預留插件介面，未來可支援 AWS CLI、Azure CLI 等 |
+| **NFR-07** | 設定檔驅動 | 解析規則存於 `config/parsers.json`，可自訂擴展 |
+| **NFR-08** | 插件架構 | 預留插件介面，支援新增 CLI 工具 |
 
-**設定檔結構範例** (`config/parsers.json`)：
+### 5.3 測試覆蓋率 (Test Coverage)
 
-```json
-{
-  "parsers": {
-    "claude": {
-      "name": "Claude Code",
-      "command": "claude",
-      "patterns": {
-        "thinking": "Thinking\\.\.\.",
-        "tool_use": "Running (\\w+)\\.\.\.",
-        "error": "Error:|Exception:",
-        "waiting": "\\[y/n\\]|\\(yes/no\\)"
-      }
-    },
-    "gemini": {
-      "name": "Gemini CLI",
-      "command": "gemini",
-      "patterns": {
-        "thinking": "\\[Thinking\\]",
-        "tool_use": "\\[Tool Use\\]: (\\w+)",
-        "error": "ERROR:|FAILED:",
-        "waiting": "Confirm\?"
-      }
-    }
-  }
-}
-```
+| 指標 | 目標 | 實際 |
+|------|------|------|
+| 測試檔案數 | - | 9 |
+| 測試案例數 | - | 196 |
+| 分支覆蓋率 | ≥75% | ✅ |
+| 函式覆蓋率 | ≥75% | ✅ |
+| 行覆蓋率 | ≥75% | ✅ |
 
 ---
 
 ## 6. 實作階段規劃 (Implementation Roadmap)
 
-### Phase 1: 核心原型 (Proof of Concept)
+### Phase 1: 核心原型 ✅
 
-```
-目標：驗證技術可行性
-週期：Sprint 1-2
-```
+| 里程碑 | 狀態 |
+|--------|------|
+| Electron 環境搭建 | ✅ 完成 |
+| node-pty 整合 | ✅ 完成 |
+| xterm.js 渲染 | ✅ 完成 |
+| 基礎 IPC | ✅ 完成 |
 
-| 里程碑 | 驗收標準 |
-|--------|----------|
-| Electron 環境搭建 | 成功啟動空白 Electron 視窗 |
-| node-pty 整合 | 能成功啟動 `claude` CLI 並攔截輸出 |
-| xterm.js 渲染 | 前端顯示含有 ANSI 顏色的終端輸出 |
-| 基礎 IPC | Main ↔ Renderer 雙向通訊正常 |
+### Phase 2: 多工與解析 ✅
 
-**產出物**：
-- 一個只有單一按鈕「Start Claude」與單一 xterm 視窗的 App
+| 里程碑 | 狀態 |
+|--------|------|
+| AgentManager 類別 | ✅ 完成 |
+| 狀態解析引擎 | ✅ 完成 |
+| Grid View UI | ✅ 完成 |
+| 專注模式 | ✅ 完成 |
 
-### Phase 2: 多工與解析 (Multi-Agent & Parsing)
+### Phase 3: 商業化升級 (v2.0 Renovation) ✅
 
-```
-目標：核心功能完整
-週期：Sprint 3-5
-```
-
-| 里程碑 | 驗收標準 |
-|--------|----------|
-| AgentManager 類別 | 支援動態新增/移除 Agent（≥5 個同時） |
-| 狀態解析引擎 | 正確識別 THINKING/WORKING/IDLE 狀態 |
-| Grid View UI | 響應式卡片佈局，即時更新狀態 |
-| 專注模式 | 點擊卡片可進入完整終端介面 |
-
-**產出物**：
-- Grid View 介面，能顯示「思考中」與「閒置」狀態切換
-- 完整的 Agent 生命週期管理
-
-### Phase 3: 廣播與優化 (Broadcasting & Polish)
-
-```
-目標：生產就緒
-週期：Sprint 6-8
-```
-
-| 里程碑 | 驗收標準 |
-|--------|----------|
-| 指令廣播 | 支援標籤選擇與批量發送 |
-| 效能優化 | 通過 NFR-01~04 所有效能測試 |
-| Edge Case 處理 | CLI 卡死偵測與自動重啟 |
-| UI 動畫 | 呼吸燈效果、狀態轉換動畫 |
-| 錯誤處理 | 完整的錯誤提示與恢復機制 |
-
-**產出物**：
-- v1.0 正式版
-- 使用者文件
+| 里程碑 | 狀態 |
+|--------|------|
+| 擴展類型系統（7 種 CLI） | ✅ 完成 |
+| CLI 自動偵測引擎 | ✅ 完成 |
+| 替換 Mock Agent 為真實 CLI | ✅ 完成 |
+| 設定管理器 + 持久化 | ✅ 完成 |
+| Vue Router + 多頁面 | ✅ 完成 |
+| Vue I18n 雙語系統 | ✅ 完成 |
+| App.vue Shell 重構 | ✅ 完成 |
+| Sidebar + TopBar 佈局 | ✅ 完成 |
+| SpawnDialog（CLI 偵測整合） | ✅ 完成 |
+| SettingsView（完整設定頁面） | ✅ 完成 |
+| OnboardingView（首次引導精靈） | ✅ 完成 |
+| 鍵盤快捷鍵 | ✅ 完成 |
+| 日誌搜尋 (xterm-addon-search) | ✅ 完成 |
+| 深色/淺色主題切換 | ✅ 完成 |
+| 呼吸燈動畫 | ✅ 完成 |
+| ErrorBoundary 組件 | ✅ 完成 |
+| Web Worker 解析器 | ✅ 完成 |
+| logUpdateCounter 效能優化 | ✅ 完成 |
+| 單元測試（196 個） | ✅ 完成 |
 
 ---
 
@@ -391,16 +393,19 @@ Agent-03: Check file src/config.ts
 | **IPC** | Inter-Process Communication，進程間通訊 |
 | **ANSI** | 美國國家標準協會，此處指終端顏色編碼標準 |
 | **node-pty** | Node.js 的偽終端機 (pseudo-terminal) 實作 |
+| **CLI Detector** | 自動偵測系統 PATH 中已安裝的 AI CLI 工具 |
+| **Onboarding** | 首次使用引導流程 |
+| **Web Worker** | 瀏覽器背景線程，用於離線計算 |
 
 ### B. 相關文件
 
-- [ ] 技術設計文件 (TDD)
-- [ ] API 規格書
-- [ ] 測試計畫書
-- [ ] 使用者手冊
+- [x] 軟體規格說明書（本文件）
+- [x] 使用者手冊（`docs/使用說明書.md`）
+- [x] 開發藍圖（`docs/ROADMAP.zh-TW.md`）
+- [ ] E2E 測試計畫書
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: 2026-01-22*
+*Document Version: 2.0.0*
+*Last Updated: 2026-02-09*
 *Author: System Orchestrator*

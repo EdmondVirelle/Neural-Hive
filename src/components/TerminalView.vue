@@ -39,21 +39,21 @@ const { write, clear, isReady, focus } = useTerminal(
 // Track last processed log index to avoid duplicates
 let lastLogIndex = 0;
 
-// Watch for new logs from this agent
+// Watch the counter instead of deep-watching the logs array (performance optimization)
 watch(
-  () => store.getAgent(props.agentId)?.logs,
-  (logs) => {
+  () => store.logUpdateCounter,
+  () => {
+    const logs = store.getAgent(props.agentId)?.logs;
     if (!logs || !isReady.value) return;
 
-    // Write only new logs
+    // Write only new logs since last processed index
     for (let i = lastLogIndex; i < logs.length; i++) {
       const log = logs[i];
       // Preserve ANSI codes, just write raw content
       write(log.content);
     }
     lastLogIndex = logs.length;
-  },
-  { deep: true }
+  }
 );
 
 // Reset log index when agent changes

@@ -17,6 +17,8 @@ import type {
     ResourceUpdatePayload,
     PauseAgentResult,
     ResumeAgentResult,
+    DetectClisResult,
+    AppSettings,
 } from '../src/types/shared.js';
 
 // IPC Channel names (Inline to avoid ESM import issues in sandbox)
@@ -36,6 +38,10 @@ const IPC_CHANNELS = {
     // Pause/Resume (FR-01-03)
     PAUSE_AGENT: 'agent:pause',
     RESUME_AGENT: 'agent:resume',
+    // CLI detection & Settings
+    DETECT_CLIS: 'app:detect-clis',
+    GET_SETTINGS: 'app:get-settings',
+    SAVE_SETTINGS: 'app:save-settings',
 } as const;
 
 // Expose protected methods to renderer via contextBridge
@@ -229,6 +235,35 @@ const electronAPI: ElectronAPI = {
      */
     resumeAgent: (agentId: string): Promise<ResumeAgentResult> => {
         return ipcRenderer.invoke(IPC_CHANNELS.RESUME_AGENT, agentId);
+    },
+
+    // ============================================
+    // CLI Detection & Settings API
+    // ============================================
+
+    /**
+     * Detect installed AI CLI tools
+     * @returns Detection results with installed/not installed status
+     */
+    detectClis: (): Promise<DetectClisResult> => {
+        return ipcRenderer.invoke(IPC_CHANNELS.DETECT_CLIS);
+    },
+
+    /**
+     * Get application settings
+     * @returns Current settings
+     */
+    getSettings: (): Promise<AppSettings> => {
+        return ipcRenderer.invoke(IPC_CHANNELS.GET_SETTINGS);
+    },
+
+    /**
+     * Save application settings
+     * @param settings - Settings to save
+     * @returns Success result
+     */
+    saveSettings: (settings: AppSettings): Promise<{ success: boolean }> => {
+        return ipcRenderer.invoke(IPC_CHANNELS.SAVE_SETTINGS, settings);
     },
 };
 

@@ -109,7 +109,7 @@ const isPaused = computed(() => props.agent.status === 'PAUSED');
               :class="{
                 'status-idle': agent.status === 'IDLE',
                 'status-thinking': agent.status === 'THINKING',
-                'status-working animate-pulse': agent.status === 'WORKING',
+                'status-working animate-breathe': agent.status === 'WORKING',
                 'status-error': agent.status === 'ERROR',
                 'status-waiting': agent.status === 'WAITING_USER',
                 'bg-violet-500': agent.status === 'PAUSED',

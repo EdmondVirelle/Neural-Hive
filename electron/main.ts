@@ -22,6 +22,8 @@ import { getResourceMonitor } from './resource-monitor.js';
 import { TaskbarNotifier } from './taskbar-notifier.js';
 import { HealthMonitor } from './health-monitor.js';
 import { AgentManager } from './agent-manager.js';
+import { SettingsManager } from './settings-manager.js';
+import { detectInstalledClis } from './cli-detector.js';
 
 // ============================================
 // State Management
@@ -36,14 +38,11 @@ const resourceMonitor = getResourceMonitor();
 const taskbarNotifier = new TaskbarNotifier();
 const healthMonitor = new HealthMonitor(path.join(_dirname, '../../config'));
 
-// Initialize Agent Manager
-const agentManager = new AgentManager(
-  configLoader,
-  broadcastManager,
-  resourceMonitor,
-  healthMonitor,
-  _dirname
-);
+// Initialize Settings Manager
+let settingsManager: SettingsManager;
+
+// Initialize Agent Manager (settingsManager injected after app.whenReady)
+let agentManager: AgentManager;
 
 // ============================================
 // Window Management
@@ -155,11 +154,41 @@ ipcMain.handle(IPC_CHANNELS.UPDATE_ERROR_COUNT, (_e, count) => {
   return { success: true };
 });
 
+// Settings & CLI Detection
+ipcMain.handle(IPC_CHANNELS.DETECT_CLIS, async () => {
+  const settings = settingsManager?.getSettings() ?? null;
+  return detectInstalledClis(settings, true);
+});
+
+ipcMain.handle(IPC_CHANNELS.GET_SETTINGS, () => {
+  return settingsManager?.getSettings() ?? {};
+});
+
+ipcMain.handle(IPC_CHANNELS.SAVE_SETTINGS, (_e, newSettings) => {
+  try {
+    settingsManager?.saveSettings(newSettings);
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+});
+
 // ============================================
 // App Lifecycle
 // ============================================
 
 app.whenReady().then(() => {
+  // Initialize managers that require app to be ready
+  settingsManager = new SettingsManager();
+  agentManager = new AgentManager(
+    configLoader,
+    broadcastManager,
+    resourceMonitor,
+    healthMonitor,
+    _dirname,
+    settingsManager
+  );
+
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

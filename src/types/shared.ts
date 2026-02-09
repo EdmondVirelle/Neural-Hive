@@ -21,7 +21,35 @@ export interface ResourceUpdatePayload {
 }
 
 // Agent type (CLI tool)
-export type AgentType = 'claude' | 'gemini' | 'aider' | 'custom';
+export type AgentType = 'claude' | 'gemini' | 'aider' | 'codex' | 'opencode' | 'cursor' | 'copilot' | 'custom';
+
+// CLI detection info
+export interface CliInfo {
+  type: AgentType;
+  name: string;
+  installed: boolean;
+  version?: string;
+  path?: string;
+}
+
+// CLI detection result
+export interface DetectClisResult {
+  clis: CliInfo[];
+  timestamp: number;
+}
+
+// Application settings (persisted)
+export interface AppSettings {
+  language: 'en' | 'zh-TW';
+  theme: 'dark' | 'light';
+  onboarded: boolean;
+  cliPaths: Partial<Record<AgentType, string>>;
+  performance: {
+    throttleMs: number;
+    maxScrollback: number;
+    maxAgents: number;
+  };
+}
 
 // Log entry for agent output
 export interface LogEntry {
@@ -70,6 +98,10 @@ export const IPC_CHANNELS = {
   RESUME_AGENT: 'agent:resume',
   // Taskbar notification (AGENT-03)
   UPDATE_ERROR_COUNT: 'app:update-error-count',
+  // CLI detection & Settings
+  DETECT_CLIS: 'app:detect-clis',
+  GET_SETTINGS: 'app:get-settings',
+  SAVE_SETTINGS: 'app:save-settings',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];
@@ -153,6 +185,10 @@ export interface ElectronAPI {
   // Pause/Resume API (FR-01-03)
   pauseAgent: (agentId: string) => Promise<PauseAgentResult>;
   resumeAgent: (agentId: string) => Promise<ResumeAgentResult>;
+  // CLI Detection & Settings API
+  detectClis: () => Promise<DetectClisResult>;
+  getSettings: () => Promise<AppSettings>;
+  saveSettings: (settings: AppSettings) => Promise<{ success: boolean }>;
 }
 
 declare global {

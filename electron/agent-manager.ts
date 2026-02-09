@@ -1,6 +1,4 @@
 import { BrowserWindow } from 'electron';
-import * as path from 'path';
-import * as fs from 'fs';
 import * as pty from 'node-pty';
 import { randomUUID } from 'crypto';
 import type { IPty } from 'node-pty';
@@ -22,6 +20,7 @@ import { BroadcastManager } from './broadcast-manager.js';
 import { ConfigLoader } from './config-loader.js';
 import { ResourceMonitor } from './resource-monitor.js';
 import { HealthMonitor } from './health-monitor.js';
+import type { SettingsManager } from './settings-manager.js';
 
 interface AgentMetadata {
     id: string;
@@ -44,7 +43,8 @@ export class AgentManager {
         private broadcastManager: BroadcastManager,
         private resourceMonitor: ResourceMonitor,
         private healthMonitor: HealthMonitor,
-        private dirname: string
+        private dirname: string,
+        private settingsManager?: SettingsManager
     ) {
         // Initialize output throttler with 100ms interval (NFR-01)
         this.outputThrottler = new OutputThrottler((agentId: string, data: string) => {
@@ -74,48 +74,50 @@ export class AgentManager {
         this.mainWindow = window;
     }
 
-    async spawnAgent(options?: { type?: string; cwd?: string }): Promise<SpawnAgentResult> {
+    /**
+     * Resolve the CLI command and args for a given agent type
+     */
+    private resolveCliCommand(agentType: string, customCommand?: string): { executable: string; args: string[] } {
+        // For custom type with user-provided command string
+        if (agentType === 'custom' && customCommand) {
+            const parts = customCommand.split(/\s+/);
+            const cmd = parts[0];
+            const cmdArgs = parts.slice(1);
+
+            if (process.platform === 'win32') {
+                return { executable: 'cmd.exe', args: ['/c', ...parts] };
+            }
+            return { executable: cmd, args: cmdArgs };
+        }
+
+        // Check for user-overridden path in settings
+        const userPaths = this.settingsManager?.get('cliPaths') || {};
+        const userPath = userPaths[agentType as keyof typeof userPaths];
+
+        // Get command from parser config
+        const parserConfig = this.configLoader.getParser(agentType);
+        const baseCommand = userPath || parserConfig?.command || agentType;
+
+        // Handle commands with spaces (e.g., "gh copilot")
+        const parts = baseCommand.split(/\s+/);
+        const cmd = parts[0];
+        const extraArgs = parts.slice(1);
+
+        if (process.platform === 'win32') {
+            // On Windows, wrap all CLI commands through cmd.exe
+            return { executable: 'cmd.exe', args: ['/c', ...parts] };
+        }
+
+        return { executable: cmd, args: extraArgs };
+    }
+
+    async spawnAgent(options?: { type?: string; cwd?: string; customCommand?: string }): Promise<SpawnAgentResult> {
         const agentId = randomUUID();
         const agentType = options?.type || 'custom';
         const cwd = options?.cwd || process.cwd();
 
         try {
-            const parserConfig = this.configLoader.getParser(agentType);
-            const command = parserConfig?.command || 'node';
-
-            // Robust script path detection (supports both dev and prod builds)
-            const scriptLocations = [
-                path.join(this.dirname, '../scripts/mock-agent.cjs'),       // Root /scripts/
-                path.join(this.dirname, '../../scripts/mock-agent.cjs'),    // dist/electron/scripts/
-                path.join(this.dirname, '../../../scripts/mock-agent.cjs'), // dist/electron/electron/scripts/
-                path.join(process.cwd(), 'scripts/mock-agent.cjs'),        // Current working directory
-                path.join(this.dirname, '../scripts/mock-agent.js'),        // Fallback to .js
-            ];
-
-            let scriptPath = '';
-            for (const loc of scriptLocations) {
-                if (fs.existsSync(loc)) {
-                    scriptPath = loc;
-                    break;
-                }
-            }
-
-            if (!scriptPath) {
-                console.error('Failed to locate mock-agent.js in any of:', scriptLocations);
-                return { success: false, error: 'Internal Error: Could not locate agent script' };
-            }
-
-            let executable = command;
-            let args = command === 'node' ? [scriptPath] : [];
-
-            if (process.platform === 'win32') {
-                if (command === 'node') {
-                    executable = 'node.exe';
-                } else {
-                    executable = 'cmd.exe';
-                    args = ['/c', command, ...args];
-                }
-            }
+            const { executable, args } = this.resolveCliCommand(agentType, options?.customCommand);
 
             const ptyProcess = pty.spawn(executable, args, {
                 name: 'xterm-256color',

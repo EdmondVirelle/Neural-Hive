@@ -36,6 +36,54 @@
                 "waiting": "\\?\\s*$"
             }
         },
+        "codex": {
+            "name": "Codex CLI",
+            "command": "codex",
+            "patterns": {
+                "thinking": "Thinking\\.\\.\\.",
+                "tool_use": "Running (\\w+)\\.\\.\\.",
+                "reading": "Reading file",
+                "searching": "Searching",
+                "error": "Error:|Exception:|FAILED",
+                "waiting": "\\[y/n\\]|\\(yes/no\\)|\\?\\s*$"
+            }
+        },
+        "opencode": {
+            "name": "OpenCode",
+            "command": "opencode",
+            "patterns": {
+                "thinking": "Thinking|Planning",
+                "tool_use": "Running (\\w+)|Executing",
+                "reading": "Reading",
+                "searching": "Searching|Grep",
+                "error": "Error:|Exception:",
+                "waiting": "\\?\\s*$|Confirm"
+            }
+        },
+        "cursor": {
+            "name": "Cursor",
+            "command": "cursor",
+            "patterns": {
+                "thinking": "Thinking\\.\\.\\.",
+                "tool_use": "Running (\\w+)",
+                "reading": "Reading|Read\\(",
+                "searching": "Searching|Search\\(",
+                "error": "Error:|Exception:|Failed",
+                "waiting": "\\?\\s*$|Accept\\?|\\[y/n\\]"
+            }
+        },
+        "copilot": {
+            "name": "GitHub Copilot",
+            "command": "gh copilot",
+            "patterns": {
+                "thinking": "Thinking|Processing",
+                "tool_use": "Running (\\w+)|Executing",
+                "reading": "Reading",
+                "searching": "Searching",
+                "error": "Error:|Exception:|FAILED",
+                "waiting": "\\?\\s*$|\\[y/n\\]"
+            }
+        },
         "custom": {
             "name": "Custom Script",
             "command": "node",

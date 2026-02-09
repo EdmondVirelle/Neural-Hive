@@ -1,19 +1,23 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import App from './App.vue';
-import './style.css';
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import App from './App.vue'
+import router from './router'
+import { i18n } from './i18n'
+import './style.css'
 
 // Create Vue application
-const app = createApp(App);
+const app = createApp(App)
 
-// Install Pinia for state management
-const pinia = createPinia();
-app.use(pinia);
+// Install plugins
+const pinia = createPinia()
+app.use(pinia)
+app.use(router)
+app.use(i18n)
 
 // Mount the application
-app.mount('#app');
+app.mount('#app')
 
 // Log startup info in development
 if (import.meta.env.DEV) {
-    console.log('🧠 Neural Hive starting in development mode...');
+  console.log('Neural Hive starting in development mode...')
 }

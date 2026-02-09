@@ -190,6 +190,76 @@ export class ConfigLoader {
             },
         });
 
+        // Aider default
+        this.parsers.set('aider', {
+            name: 'Aider',
+            command: 'aider',
+            patterns: {
+                thinking: />\s*Thinking/i,
+                tool_use: /Running (\w+)/i,
+                reading: /Reading/i,
+                searching: /Searching/i,
+                error: /Error:|Exception:/i,
+                waiting: /\?\s*$/i,
+            },
+        });
+
+        // Codex default
+        this.parsers.set('codex', {
+            name: 'Codex CLI',
+            command: 'codex',
+            patterns: {
+                thinking: /Thinking\.\.\./i,
+                tool_use: /Running (\w+)\.\.\./i,
+                reading: /Reading file/i,
+                searching: /Searching/i,
+                error: /Error:|Exception:|FAILED/i,
+                waiting: /\[y\/n\]|\(yes\/no\)/i,
+            },
+        });
+
+        // OpenCode default
+        this.parsers.set('opencode', {
+            name: 'OpenCode',
+            command: 'opencode',
+            patterns: {
+                thinking: /Thinking|Planning/i,
+                tool_use: /Running (\w+)|Executing/i,
+                reading: /Reading/i,
+                searching: /Searching|Grep/i,
+                error: /Error:|Exception:/i,
+                waiting: /\?\s*$|Confirm/i,
+            },
+        });
+
+        // Cursor default
+        this.parsers.set('cursor', {
+            name: 'Cursor',
+            command: 'cursor',
+            patterns: {
+                thinking: /Thinking\.\.\./i,
+                tool_use: /Running (\w+)/i,
+                reading: /Reading|Read\(/i,
+                searching: /Searching|Search\(/i,
+                error: /Error:|Exception:|Failed/i,
+                waiting: /\?\s*$|Accept\?|\[y\/n\]/i,
+            },
+        });
+
+        // GitHub Copilot default
+        this.parsers.set('copilot', {
+            name: 'GitHub Copilot',
+            command: 'gh copilot',
+            patterns: {
+                thinking: /Thinking|Processing/i,
+                tool_use: /Running (\w+)|Executing/i,
+                reading: /Reading/i,
+                searching: /Searching/i,
+                error: /Error:|Exception:|FAILED/i,
+                waiting: /\?\s*$|\[y\/n\]/i,
+            },
+        });
+
         // Custom default
         this.parsers.set('custom', {
             name: 'Custom Script',

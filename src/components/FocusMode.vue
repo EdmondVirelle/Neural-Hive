@@ -10,14 +10,18 @@
  * Spec Reference: 4.1.2 Focus View
  */
 
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAgentStore } from '@/stores/agentStore';
 import TerminalView from './TerminalView.vue';
 import SkillsPanel from './SkillsPanel.vue';
+import LogSearch from './LogSearch.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCw, X } from 'lucide-vue-next';
+import { ArrowLeft, RotateCw, X, Search } from 'lucide-vue-next';
 import type { AgentStatus } from '@/types/shared';
+
+const { t } = useI18n();
 
 // Props
 const props = defineProps<{
@@ -46,10 +50,21 @@ function handleClose() {
   emit('close');
 }
 
-// Keyboard shortcut: Escape to close
+// Log search state
+const showLogSearch = ref(false);
+
+// Keyboard shortcut: Escape to close, Ctrl+F for search
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    handleClose();
+    if (showLogSearch.value) {
+      showLogSearch.value = false;
+    } else {
+      handleClose();
+    }
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+    event.preventDefault();
+    showLogSearch.value = !showLogSearch.value;
   }
 }
 
@@ -106,7 +121,7 @@ function getStatusDotClass(status: AgentStatus | undefined): string {
           @click="handleClose"
         >
           <ArrowLeft class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-          Return to Deck
+          {{ t('focus.returnToDeck') }}
         </Button>
 
         <!-- Agent info -->
@@ -155,6 +170,18 @@ function getStatusDotClass(status: AgentStatus | undefined): string {
         </div>
 
         <div class="flex items-center gap-2 ml-2">
+            <!-- Search button -->
+            <Button
+              variant="outline"
+              size="sm"
+              class="border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-widest text-[10px] h-9"
+              title="Search Logs (Ctrl+F)"
+              @click="showLogSearch = !showLogSearch"
+            >
+              <Search class="w-3.5 h-3.5 mr-2" />
+              Search
+            </Button>
+
             <!-- Restart button -->
             <Button
               variant="outline"
@@ -164,7 +191,7 @@ function getStatusDotClass(status: AgentStatus | undefined): string {
               @click="handleRestart"
             >
               <RotateCw class="w-3.5 h-3.5 mr-2" />
-              Reset
+              {{ t('focus.reset') }}
             </Button>
 
             <!-- Close button -->
@@ -184,7 +211,12 @@ function getStatusDotClass(status: AgentStatus | undefined): string {
     <!-- Main content: Terminal + Skills Panel -->
     <main class="flex-1 flex overflow-hidden relative z-0">
       <!-- Terminal (Left) -->
-      <div class="flex-1 p-6 overflow-hidden flex flex-col">
+      <div class="flex-1 p-6 overflow-hidden flex flex-col relative">
+        <!-- Log Search Overlay -->
+        <LogSearch
+          v-model:visible="showLogSearch"
+          @close="showLogSearch = false"
+        />
         <div class="flex-1 terminal-container shadow-[0_0_100px_rgba(0,0,0,0.5)]">
           <TerminalView :agent-id="agentId" />
         </div>

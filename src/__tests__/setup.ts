@@ -20,6 +20,19 @@ const mockElectronAPI = {
     onUpdate: vi.fn().mockReturnValue(() => { }),
     pauseAgent: vi.fn().mockResolvedValue({ success: true }),
     resumeAgent: vi.fn().mockResolvedValue({ success: true }),
+    // Phase 2 additions
+    detectClis: vi.fn().mockResolvedValue({ clis: [], timestamp: Date.now() }),
+    getSettings: vi.fn().mockResolvedValue({
+        language: 'en',
+        theme: 'dark',
+        onboarded: false,
+        cliPaths: {},
+        performance: { throttleMs: 100, maxScrollback: 10000, maxAgents: 10 },
+    }),
+    saveSettings: vi.fn().mockResolvedValue({ success: true }),
+    onResourceUpdate: vi.fn().mockReturnValue(() => { }),
+    setAgentTags: vi.fn().mockResolvedValue({ success: true }),
+    resizeTerminal: vi.fn().mockResolvedValue({ success: true }),
 };
 
 // Stub window with electronAPI
